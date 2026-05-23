@@ -82,7 +82,7 @@ model Resume {
 
 model ResumeEmbedding {
   resumeId  String   @id
-  embedding Unsupported("vector(1536)")
+  embedding Unsupported("vector(768)")
   updatedAt DateTime @updatedAt
 
   resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
@@ -103,7 +103,7 @@ model JobIntent {
 
 model IntentEmbedding {
   intentId  String   @id
-  embedding Unsupported("vector(1536)")
+  embedding Unsupported("vector(768)")
   updatedAt DateTime @updatedAt
 
   intent JobIntent @relation(fields: [intentId], references: [id], onDelete: Cascade)
@@ -125,6 +125,8 @@ model Jd {
   recruitmentActivity String?
   replyDays           String?
   contactTime         String?
+  postedAt            String?
+  applicantCount      Int?
   locationFiltered    Boolean  @default(false)
   crawledAt           DateTime @default(now())
   parseStatus         String   @default("ok")
@@ -136,7 +138,7 @@ model Jd {
 
 model JdEmbedding {
   jdId      String @id
-  embedding Unsupported("vector(1536)")
+  embedding Unsupported("vector(768)")
 
   jd Jd @relation(fields: [jdId], references: [id], onDelete: Cascade)
 }
