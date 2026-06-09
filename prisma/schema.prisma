@@ -18,12 +18,14 @@ model User {
   createdAt      DateTime  @default(now())
   locationFilter String[]  @default(["台北市", "新北市"])
 
-  accounts        Account[]
-  sessions        Session[]
-  resume          Resume?
-  jobIntent       JobIntent?
-  recommendations Recommendation[]
-  emailLogs       EmailLog[]
+  accounts         Account[]
+  sessions         Session[]
+  resume           Resume?
+  jobIntent        JobIntent?
+  recommendations  Recommendation[]
+  emailLogs        EmailLog[]
+  applications     Application[]
+  savedJobs        SavedJob[]
 }
 
 model Account {
@@ -125,15 +127,18 @@ model Jd {
   recruitmentActivity String?
   replyDays           String?
   contactTime         String?
+  description         String?
   postedAt            String?
   applicantCount      Int?
   locationFiltered    Boolean  @default(false)
   crawledAt           DateTime @default(now())
   parseStatus         String   @default("ok")
 
-  embedding       JdEmbedding?
-  recommendations Recommendation[]
-  emailLogs       EmailLog[]
+  embedding        JdEmbedding?
+  recommendations  Recommendation[]
+  emailLogs        EmailLog[]
+  applications     Application[]
+  savedJobs        SavedJob[]
 }
 
 model JdEmbedding {
@@ -162,6 +167,63 @@ model Recommendation {
 
   @@unique([userId, jdId, dailyBatch])
 }
+
+// ─── Application Tracking ────────────────────────────────────────────────────
+
+model Application {
+  id          String   @id @default(cuid())
+  userId      String
+  jdId        String
+  status      String   @default("not_applied")
+  companyType  String?
+  appliedAt    DateTime?
+  scheduledAt  DateTime?
+  note        String?
+  aiQuestions Json     @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jd               Jd                @relation(fields: [jdId], references: [id], onDelete: Cascade)
+  interviewRecords InterviewRecord[]
+
+  @@unique([userId, jdId])
+}
+
+model InterviewRecord {
+  id            String   @id @default(cuid())
+  applicationId String
+  interviewedAt DateTime
+  interviewer   String?
+  qa            Json     @default("[]")
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Saved Jobs ──────────────────────────────────────────────────────────────
+
+model SavedJob {
+  id          String   @id @default(cuid())
+  userId      String
+  jdId        String?
+  externalUrl String
+  companyName String
+  title       String
+  platform    String   @default("other")
+  companyType String?
+  status      String   @default("watching")
+  savedAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jd   Jd?  @relation(fields: [jdId], references: [id])
+
+  @@unique([userId, externalUrl])
+}
+
+// ─── Email ───────────────────────────────────────────────────────────────────
 
 model EmailLog {
   id               String    @id @default(cuid())
