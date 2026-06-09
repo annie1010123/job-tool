@@ -1,10 +1,6 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import CoverLetterTryIt from "./_components/CoverLetterTryIt";
 
 export default async function Home() {
-  const session = await auth();
-  if (session?.user) redirect("/dashboard");
 
   const features = [
     { icon: "🎯", title: "AI 語意推薦", desc: "不是關鍵字匹配，是理解你的履歷和求職意圖，每天推薦最 match 的職缺" },
