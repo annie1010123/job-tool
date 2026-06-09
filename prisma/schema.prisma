@@ -26,6 +26,7 @@ model User {
   emailLogs        EmailLog[]
   applications     Application[]
   savedJobs        SavedJob[]
+  questionBank     QuestionBank[]
 }
 
 model Account {
@@ -186,6 +187,7 @@ model Application {
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   jd               Jd                @relation(fields: [jdId], references: [id], onDelete: Cascade)
   interviewRecords InterviewRecord[]
+  interviewReviews InterviewReview[]
 
   @@unique([userId, jdId])
 }
@@ -237,4 +239,35 @@ model EmailLog {
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   recommendation Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
   jd             Jd             @relation(fields: [jdId], references: [id], onDelete: Cascade)
+}
+
+// ─── Interview Review ────────────────────────────────────────────────────────
+
+model InterviewReview {
+  id              String   @id @default(cuid())
+  applicationId   String
+  audioUrl        String?
+  transcript      String?  @db.Text
+  extractedQA     Json     @default("[]")
+  overallFeedback String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Question Bank ───────────────────────────────────────────────────────────
+
+model QuestionBank {
+  id                    String   @id @default(cuid())
+  userId                String
+  question              String
+  answer                String?  @db.Text
+  category              String   @default("other")
+  sourceApplicationId   String?
+  userPerformance       String?
+  frequency             Int      @default(1)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
