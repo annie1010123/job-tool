@@ -85,10 +85,6 @@ export default function AddJobModal({
       setError("公司名稱和職缺名稱為必填");
       return;
     }
-    if (!parseUrl.trim()) {
-      setError("請填入職缺網址");
-      return;
-    }
     setSaving(true);
     setError("");
     try {
@@ -96,7 +92,7 @@ export default function AddJobModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          externalUrl: parseUrl.trim(),
+          externalUrl: parseUrl.trim() || undefined,
           companyName: companyName.trim(),
           title: jobTitle.trim(),
           platform,

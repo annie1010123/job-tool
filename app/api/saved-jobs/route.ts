@@ -22,19 +22,21 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { jdId, externalUrl, companyName, title, platform, companyType } = body;
 
-  if (!externalUrl || !companyName || !title) {
+  if (!companyName || !title) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  const url = externalUrl?.trim() || `manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
   const job = await prisma.savedJob.upsert({
     where: {
-      userId_externalUrl: { userId: session.user.id, externalUrl },
+      userId_externalUrl: { userId: session.user.id, externalUrl: url },
     },
     update: {},
     create: {
       userId: session.user.id,
       jdId: jdId ?? null,
-      externalUrl,
+      externalUrl: url,
       companyName,
       title,
       platform: platform ?? "other",
