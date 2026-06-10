@@ -78,21 +78,12 @@ export default function RecommendationList({
   }, [recommendations, filter, sort]);
 
   async function handleSave(jd: Jd) {
-    if (savedIds.has(jd.id)) {
-      setSavedIds((prev) => { const n = new Set(prev); n.delete(jd.id); return n; });
-      return;
-    }
+    if (savedIds.has(jd.id)) return;
     setSavedIds((prev) => new Set([...prev, jd.id]));
-    await fetch("/api/saved-jobs", {
+    await fetch("/api/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jdId: jd.id,
-        externalUrl: jd.externalUrl,
-        companyName: jd.companyName,
-        title: jd.title,
-        platform: "104",
-      }),
+      body: JSON.stringify({ jdId: jd.id, status: "watching" }),
     });
   }
 
