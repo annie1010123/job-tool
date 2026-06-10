@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
-import { matchForUser, recencyBoost, competitionBoost } from "@/lib/match/score";
+import { matchForUser, recencyBoost, replyBoost, activityBoost, competitionBoost } from "@/lib/match/score";
 import { generateReasons } from "@/lib/match/reason";
 import { sendDailyDigest, parseSalaryMin } from "@/lib/email/send";
 import type { JobRow } from "@/lib/email/template";
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   const users = await prisma.user.findMany({
-    where: { resume: { isNot: null }, jobIntent: { isNot: null } },
+    where: { jobIntent: { isNot: null } },
     select: { id: true, email: true, jobIntent: { select: { rawInput: true } } },
   });
 
@@ -44,19 +44,32 @@ export async function GET(req: NextRequest) {
       });
       const jdMap = Object.fromEntries(jdData.map((j) => [j.id, j]));
 
-      const allBoosted = matches.map((m) => {
-        const jd = jdMap[m.jdId];
-        const boost = recencyBoost(jd?.postedAt ?? null) * competitionBoost(jd?.applicantCount ?? null);
-        return { ...m, finalScore: m.finalScore * boost };
-      }).sort((a, b) => b.finalScore - a.finalScore);
+      // Exclude jobs recommended in the last 7 days
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentRecs = await prisma.recommendation.findMany({
+        where: { userId: user.id, dailyBatch: { gte: sevenDaysAgo, lt: today } },
+        select: { jdId: true },
+      });
+      const recentJdIds = new Set(recentRecs.map((r) => r.jdId));
 
-      // Diversity guardrail: max 2 JDs per company
-      const companyCounts = new Map<string, number>();
+      const allBoosted = matches
+        .filter((m) => !recentJdIds.has(m.jdId))
+        .map((m) => {
+          const jd = jdMap[m.jdId];
+          const boost = recencyBoost(jd?.postedAt ?? null)
+            * replyBoost(jd?.replyDays ?? null)
+            * activityBoost(jd?.recruitmentActivity ?? null)
+            * competitionBoost(jd?.applicantCount ?? null);
+          return { ...m, finalScore: m.finalScore * boost };
+        }).sort((a, b) => b.finalScore - a.finalScore);
+
+      // Diversity guardrail: max 1 JD per company
+      const seen = new Set<string>();
       const boostedMatches = allBoosted.filter((m) => {
         const company = jdMap[m.jdId]?.companyName ?? "";
-        const count = companyCounts.get(company) ?? 0;
-        if (count >= 2) return false;
-        companyCounts.set(company, count + 1);
+        if (seen.has(company)) return false;
+        seen.add(company);
         return true;
       }).slice(0, 10);
 

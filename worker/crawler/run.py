@@ -36,7 +36,7 @@ DETAIL_API   = f"{BASE_URL}/job/ajax/content"
 PAGES_PER_KW = 5
 MAX_PER_HOUR = 1500
 MAX_ERRORS   = 5
-VOYAGE_URL   = "https://api.voyageai.com/v1/embeddings"
+GEMINI_EMBED_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-embedding-001:embedContent"
 
 SESSION_UA = random.choice([
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -197,7 +197,7 @@ def fetch_job_detail(job_url: str, hr_score: float = 0.0) -> dict | None:
 # ── Embedding ─────────────────────────────────────────────────────────────────
 
 def embed_jd(job: dict) -> list[float]:
-    api_key = os.environ.get("VOYAGE_API_KEY", "")
+    api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         return []
     skills_str = ", ".join(job.get("skills") or [])
@@ -211,14 +211,14 @@ def embed_jd(job: dict) -> list[float]:
         f"描述：{(job.get('description') or '')[:800]}"
     )
     resp = session.post(
-        VOYAGE_URL,
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-        json={"model": "voyage-3-lite", "input": [text]},
+        f"{GEMINI_EMBED_URL}?key={api_key}",
+        headers={"Content-Type": "application/json"},
+        json={"model": "models/gemini-embedding-001", "content": {"parts": [{"text": text}]}, "outputDimensionality": 768},
         timeout=30,
     )
     if resp.status_code != 200:
         return []
-    return resp.json()["data"][0]["embedding"]
+    return resp.json()["embedding"]["values"]
 
 # ── DB ────────────────────────────────────────────────────────────────────────
 

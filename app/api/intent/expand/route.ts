@@ -4,6 +4,7 @@ import { expandIntent } from "@/lib/intent/expand";
 import { embedText } from "@/lib/resume/embed";
 import { prisma } from "@/lib/db/client";
 import { sendPreviewEmail } from "@/lib/match/preview";
+import { matchForUser } from "@/lib/match/score";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -12,12 +13,16 @@ export async function POST(req: NextRequest) {
   }
   const userId = session.user.id;
 
-  const { rawInput } = (await req.json()) as { rawInput?: string };
+  const { rawInput, selectedKeywords } = (await req.json()) as {
+    rawInput?: string;
+    selectedKeywords?: string[];
+  };
   if (!rawInput?.trim()) {
     return NextResponse.json({ error: "請輸入求職意圖" }, { status: 400 });
   }
 
-  const expandedKeywords = await expandIntent(rawInput.trim());
+  // If selectedKeywords provided (confirm step), skip LLM re-expansion
+  const expandedKeywords = selectedKeywords ?? await expandIntent(rawInput.trim());
 
   // Upsert JobIntent
   const intent = await prisma.jobIntent.upsert({
@@ -42,13 +47,30 @@ export async function POST(req: NextRequest) {
     console.error("Intent embedding failed (non-fatal):", e);
   }
 
-  // Fire-and-forget preview email after intent saved
+  // Fire-and-forget: refresh recommendations + preview email
   const userEmail = session.user.email;
-  if (userEmail) {
-    sendPreviewEmail(userId, userEmail).catch((e) =>
-      console.error("Preview email failed (non-fatal):", e)
-    );
-  }
+  Promise.all([
+    // Rebuild today's recommendation batch immediately
+    matchForUser(userId, 20).then(async (matches) => {
+      if (matches.length === 0) return;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      await prisma.recommendation.deleteMany({ where: { userId, dailyBatch: today } });
+      await prisma.recommendation.createMany({
+        data: matches.map((m) => ({
+          userId,
+          jdId: m.jdId,
+          resumeScore: m.resumeScore,
+          intentScore: m.intentScore,
+          finalScore: m.finalScore,
+          dailyBatch: today,
+        })),
+      });
+    }),
+    userEmail
+      ? sendPreviewEmail(userId, userEmail)
+      : Promise.resolve(),
+  ]).catch((e) => console.error("Post-intent refresh failed (non-fatal):", e));
 
   return NextResponse.json({ success: true, expandedKeywords });
 }

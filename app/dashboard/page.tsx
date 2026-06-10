@@ -15,32 +15,15 @@ export default async function DashboardPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const todayRecs = await prisma.recommendation.findMany({
-    where: { userId: session.user.id, dailyBatch: today },
-    orderBy: { finalScore: "desc" },
-    take: 10,
-    include: { jd: true },
-  });
+  const threeDaysAgo = new Date(today);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-  const latestRec = todayRecs.length === 0
-    ? await prisma.recommendation.findFirst({
-        where: { userId: session.user.id },
-        orderBy: { dailyBatch: "desc" },
-        select: { dailyBatch: true },
-      })
-    : null;
-
-  const [recommendations, statsRaw] = await Promise.all([
-    todayRecs.length > 0
-      ? Promise.resolve(todayRecs)
-      : latestRec
-        ? prisma.recommendation.findMany({
-            where: { userId: session.user.id, dailyBatch: latestRec.dailyBatch },
-            orderBy: { finalScore: "desc" },
-            take: 10,
-            include: { jd: true },
-          })
-        : Promise.resolve([]),
+  const [allRecs, statsRaw] = await Promise.all([
+    prisma.recommendation.findMany({
+      where: { userId: session.user.id, dailyBatch: { gte: threeDaysAgo } },
+      orderBy: { finalScore: "desc" },
+      include: { jd: true },
+    }),
     prisma.application.groupBy({
       by: ["status"],
       where: { userId: session.user.id },
@@ -48,11 +31,20 @@ export default async function DashboardPage() {
     }),
   ]);
 
+  // Deduplicate by jdId across days, keep highest score
+  const seen = new Map<string, typeof allRecs[number]>();
+  for (const rec of allRecs) {
+    const prev = seen.get(rec.jdId);
+    if (!prev || rec.finalScore > prev.finalScore) seen.set(rec.jdId, rec);
+  }
+  const recommendations = Array.from(seen.values())
+    .sort((a, b) => b.finalScore - a.finalScore);
+
   const statMap = Object.fromEntries(statsRaw.map((s) => [s.status, s._count.status]));
-  const isToday = todayRecs.length > 0;
-  const batchDate = isToday ? today : (latestRec?.dailyBatch ?? null);
-  const batchDateStr = batchDate
-    ? `${batchDate.getMonth() + 1}/${batchDate.getDate()}`
+  const isToday = allRecs.some((r) => r.dailyBatch >= today);
+  const latestBatch = allRecs[0]?.dailyBatch ?? null;
+  const batchDateStr = latestBatch
+    ? `${latestBatch.getMonth() + 1}/${latestBatch.getDate()}`
     : null;
 
   return (
