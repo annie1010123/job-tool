@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AddJobModal from "./AddJobModal";
 
@@ -43,6 +43,10 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
   const router = useRouter();
   const [apps, setApps] = useState<WatchingApp[]>(initialApps);
   const [typeFilter, setTypeFilter] = useState<string>("全部");
+
+  useEffect(() => {
+    setApps(initialApps);
+  }, [initialApps]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [applyingId, setApplyingId] = useState<string | null>(null);
 
@@ -60,6 +64,7 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
       });
       if (resp.ok) {
         setApps((prev) => prev.filter((a) => a.id !== appId));
+        router.refresh();
       }
     } finally {
       setApplyingId(null);
@@ -70,6 +75,7 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
     const resp = await fetch(`/api/applications/${appId}`, { method: "DELETE" });
     if (resp.ok) {
       setApps((prev) => prev.filter((a) => a.id !== appId));
+      router.refresh();
     }
   }
 

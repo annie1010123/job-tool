@@ -45,10 +45,17 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const application = await prisma.application.upsert({
+    const existingManual = await prisma.application.findUnique({
       where: { userId_jdId: { userId: session.user.id, jdId: jd.id } },
-      update: {},
-      create: {
+      include: { jd: { select: { title: true, companyName: true } } },
+    });
+
+    if (existingManual) {
+      return NextResponse.json({ application: existingManual });
+    }
+
+    const application = await prisma.application.create({
+      data: {
         userId: session.user.id,
         jdId: jd.id,
         status: body.status ?? "not_applied",
@@ -61,10 +68,26 @@ export async function POST(req: NextRequest) {
   }
 
   // 原有流程：從推薦清單加入
-  const application = await prisma.application.upsert({
+  const existing = await prisma.application.findUnique({
     where: { userId_jdId: { userId: session.user.id, jdId: body.jdId } },
-    update: {},
-    create: { userId: session.user.id, jdId: body.jdId, status: body.status ?? "not_applied" },
+    include: { jd: { select: { title: true, companyName: true } } },
+  });
+
+  if (existing) {
+    // ♡ 收藏：只有在 not_applied 時才升級成 watching，已投遞/面試中的不降級
+    if (body.status === "watching" && existing.status === "not_applied") {
+      const updated = await prisma.application.update({
+        where: { id: existing.id },
+        data: { status: "watching" },
+        include: { jd: { select: { title: true, companyName: true } } },
+      });
+      return NextResponse.json({ application: updated });
+    }
+    return NextResponse.json({ application: existing });
+  }
+
+  const application = await prisma.application.create({
+    data: { userId: session.user.id, jdId: body.jdId, status: body.status ?? "not_applied" },
     include: { jd: { select: { title: true, companyName: true } } },
   });
 
