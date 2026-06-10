@@ -24,7 +24,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
   const serialized = JSON.parse(JSON.stringify(app));
 
   function getDefaultTab(status: string): "ai" | "cover-letter" | "review" | "info" {
-    if (status === "not_applied") return "cover-letter";
+    if (status === "not_applied" || status === "watching") return "cover-letter";
     if (status === "offer" || status === "rejected") return "review";
     return "ai";
   }

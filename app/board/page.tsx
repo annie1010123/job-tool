@@ -11,7 +11,7 @@ export default async function BoardPage() {
   if (!session?.user?.id) redirect("/login");
 
   const applications = await prisma.application.findMany({
-    where: { userId: session.user.id, isArchived: false },
+    where: { userId: session.user.id, isArchived: false, status: { not: "watching" } },
     include: {
       jd: { select: { id: true, title: true, companyName: true, externalUrl: true, postedAt: true } },
       interviewRecords: true,
