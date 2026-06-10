@@ -46,8 +46,7 @@ export default async function BoardPage() {
 
         {/* initialArchivedApplications will be properly typed in Task 6 */}
         {(() => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // initialArchivedApplications will be properly typed in Task 6
           const Board = KanbanBoard as React.ComponentType<{ initialApplications: unknown; initialArchivedApplications: unknown }>;
           return (
             <Board
