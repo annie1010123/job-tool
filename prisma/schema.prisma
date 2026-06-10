@@ -183,6 +183,7 @@ model Application {
   scheduledAt  DateTime?
   note        String?
   aiQuestions   Json      @default("[]")
+  resumeUrl     String?
   isArchived    Boolean   @default(false)
   archiveReason String?
   archivedAt    DateTime?
