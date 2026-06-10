@@ -2,27 +2,6 @@
 
 import { useState } from "react";
 
-interface SavedJob {
-  id: string;
-  userId: string;
-  jdId: string | null;
-  externalUrl: string;
-  companyName: string;
-  title: string;
-  platform: string;
-  companyType: string | null;
-  status: string;
-  savedAt: string;
-}
-
-const PLATFORM_OPTIONS = [
-  { value: "104", label: "104" },
-  { value: "linkedin", label: "LinkedIn" },
-  { value: "cake", label: "Cake" },
-  { value: "yourator", label: "Yourator" },
-  { value: "other", label: "其他" },
-];
-
 const COMPANY_TYPE_OPTIONS = [
   { value: "startup", label: "新創" },
   { value: "large", label: "大公司" },
@@ -35,7 +14,7 @@ export default function AddJobModal({
   onAdded,
 }: {
   onClose: () => void;
-  onAdded: (job: SavedJob) => void;
+  onAdded: () => void;
 }) {
   const [parseUrl, setParseUrl] = useState("");
   const [parsing, setParsing] = useState(false);
@@ -44,7 +23,6 @@ export default function AddJobModal({
 
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
-  const [platform, setPlatform] = useState("other");
   const [companyType, setCompanyType] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -68,11 +46,6 @@ export default function AddJobModal({
       const { companyName: c, jobTitle: j } = data.parsed ?? {};
       if (c) setCompanyName(c);
       if (j) setJobTitle(j);
-      // Auto-detect platform from URL
-      if (url.includes("104.com")) setPlatform("104");
-      else if (url.includes("linkedin.com")) setPlatform("linkedin");
-      else if (url.includes("cake")) setPlatform("cake");
-      else if (url.includes("yourator.co")) setPlatform("yourator");
       setParsed(true);
     } finally {
       setParsing(false);
@@ -88,24 +61,23 @@ export default function AddJobModal({
     setSaving(true);
     setError("");
     try {
-      const resp = await fetch("/api/saved-jobs", {
+      const resp = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          externalUrl: parseUrl.trim() || undefined,
           companyName: companyName.trim(),
-          title: jobTitle.trim(),
-          platform,
+          jobTitle: jobTitle.trim(),
+          sourceUrl: parseUrl.trim() || undefined,
           companyType: companyType || null,
+          status: "watching",
         }),
       });
       if (!resp.ok) {
         const d = await resp.json().catch(() => ({}));
-        setError(d.error ?? "儲存失敗，請再試一次");
+        setError((d as { error?: string }).error ?? "儲存失敗，請再試一次");
         return;
       }
-      const data = await resp.json();
-      onAdded(data.job);
+      onAdded();
     } finally {
       setSaving(false);
     }
@@ -219,19 +191,6 @@ export default function AddJobModal({
                 placeholder="e.g. 產品經理實習生"
                 style={inputStyle}
               />
-            </div>
-
-            <div>
-              <label style={labelStyle}>平台</label>
-              <select
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
-                style={{ ...inputStyle }}
-              >
-                {PLATFORM_OPTIONS.map((p) => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
-              </select>
             </div>
 
             <div>
