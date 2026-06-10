@@ -25,7 +25,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
   const serialized = JSON.parse(JSON.stringify(app));
 
   function getDefaultTab(status: string): "ai" | "cover-letter" | "review" | "info" {
-    if (status === "not_applied" || status === "watching") return "cover-letter";
+    if (status === "not_applied" || status === "watching") return "info";
     if (status === "offer" || status === "rejected") return "review";
     return "ai";
   }
@@ -93,9 +93,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
               <div className="pt-4 border-t border-zinc-50">
                 <p className="text-xs text-zinc-400 mb-2">職缺描述</p>
                 <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-wrap">
-                  {app.jd.description.length > 600
-                    ? app.jd.description.slice(0, 600) + "…"
-                    : app.jd.description}
+                  {app.jd.description}
                 </p>
               </div>
             )}

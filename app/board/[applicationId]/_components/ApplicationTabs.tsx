@@ -27,10 +27,10 @@ interface InterviewReview {
 }
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "ai", label: "面試準備" },
-  { key: "cover-letter", label: "推薦信" },
-  { key: "review", label: "面試復盤" },
   { key: "info", label: "職缺資訊" },
+  { key: "cover-letter", label: "推薦信" },
+  { key: "ai", label: "面試準備" },
+  { key: "review", label: "面試復盤" },
 ];
 
 export default function ApplicationTabs({
