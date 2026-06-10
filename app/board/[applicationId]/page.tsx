@@ -30,7 +30,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen" style={{ background: "#f1efe8" }}>
       <div className="max-w-3xl mx-auto px-4 py-10">
         <a href="/board" className="text-sm text-zinc-400 hover:text-zinc-700 transition-colors mb-6 inline-block">
           ← 回看板

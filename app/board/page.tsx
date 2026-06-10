@@ -29,7 +29,7 @@ export default async function BoardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen" style={{ background: "#f1efe8" }}>
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
