@@ -9,9 +9,12 @@ export default async function SavedPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const jobs = await prisma.savedJob.findMany({
-    where: { userId: session.user.id },
-    orderBy: { savedAt: "desc" },
+  const applications = await prisma.application.findMany({
+    where: { userId: session.user.id, status: "watching", isArchived: false },
+    include: {
+      jd: { select: { id: true, title: true, companyName: true, source: true, externalUrl: true } },
+    },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -23,13 +26,13 @@ export default async function SavedPage() {
               <a href="/dashboard" style={{ fontSize: 13, color: "#888780", textDecoration: "none" }}>← 回推薦</a>
             </div>
             <h1 style={{ fontSize: 20, fontWeight: 600, color: "#1a1a18" }}>職缺收藏區</h1>
-            <p style={{ fontSize: 13, color: "#888780", marginTop: 2 }}>{jobs.length} 個職缺收藏中</p>
+            <p style={{ fontSize: 13, color: "#888780", marginTop: 2 }}>{applications.length} 個職缺收藏中</p>
           </div>
           <a href="/board" style={{ fontSize: 13, fontWeight: 500, padding: "8px 18px", borderRadius: 20, border: "0.5px solid rgba(0,0,0,0.2)", background: "#fff", color: "#1a1a18", textDecoration: "none" }}>
             投遞追蹤 →
           </a>
         </div>
-        <SavedJobList initialJobs={JSON.parse(JSON.stringify(jobs))} />
+        <SavedJobList initialApps={JSON.parse(JSON.stringify(applications))} />
       </div>
     </div>
   );
