@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { STATUSES, COMPANY_TYPES } from "./KanbanBoard";
 
@@ -188,6 +188,22 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
   const [savingInterview, setSavingInterview] = useState(false);
   const [reviewingAI, setReviewingAI] = useState(false);
 
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; prevStatus: string } | null>(null);
+  const statusRef   = useRef<HTMLDivElement>(null);
+  const archiveRef  = useRef<HTMLDivElement>(null);
+  const toastTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (statusRef.current  && !statusRef.current.contains(e.target as Node))  setStatusOpen(false);
+      if (archiveRef.current && !archiveRef.current.contains(e.target as Node)) setArchiveOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
   async function patchApp(data: Record<string, unknown>) {
     await fetch(`/api/applications/${application.id}`, {
       method: "PATCH",
@@ -203,8 +219,22 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
   }
 
   async function updateStatus(newStatus: string) {
+    const prev = status;
     setStatus(newStatus);
     await patchApp({ status: newStatus });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    const label = STATUSES.find(s => s.value === newStatus)?.label ?? newStatus;
+    setToast({ msg: `狀態已更新為「${label}」`, prevStatus: prev });
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
+  }
+
+  async function undoStatus() {
+    if (!toast) return;
+    const prev = toast.prevStatus;
+    setStatus(prev);
+    setToast(null);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    await patchApp({ status: prev });
   }
 
   async function updateCompanyType(value: string | null) {
@@ -353,16 +383,53 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
               onSave={(v) => patchJd({ title: v })}
             />
           </h1>
-          {!isManual && (
-            <a
-              href={jd.externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 text-xs bg-zinc-900 text-white rounded-lg px-3 py-1.5 hover:bg-zinc-700 transition-colors"
-            >
-              查看職缺 ↗
-            </a>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {!isManual && (
+              <a
+                href={jd.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs bg-zinc-900 text-white rounded-lg px-3 py-1.5 hover:bg-zinc-700 transition-colors"
+              >
+                查看職缺 ↗
+              </a>
+            )}
+            {/* Archive button */}
+            <div className="relative" ref={archiveRef}>
+              <button onClick={() => setArchiveOpen(o => !o)}
+                className="flex items-center gap-1.5 text-xs text-zinc-400 border border-zinc-200 rounded-lg px-3 py-1.5 hover:border-zinc-400 hover:text-zinc-600 transition-colors">
+                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <polyline points="21 8 21 21 3 21 3 8"/>
+                  <rect x="1" y="3" width="22" height="5"/>
+                  <line x1="10" y1="12" x2="14" y2="12"/>
+                </svg>
+                封存
+              </button>
+              {archiveOpen && (
+                <div className="absolute right-0 top-full mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-lg z-20 min-w-[160px] overflow-hidden">
+                  <div className="px-3 pt-2 pb-1 text-xs text-zinc-400 border-b border-zinc-100">選擇封存原因</div>
+                  {[
+                    { value: "ghosted",  label: "久沒回音" },
+                    { value: "rejected", label: "收到感謝信" },
+                    { value: "withdrew", label: "主動放棄" },
+                  ].map(r => (
+                    <button key={r.value}
+                      onClick={async () => {
+                        setArchiveOpen(false);
+                        await fetch(`/api/applications/${application.id}`, {
+                          method: "PATCH", headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ isArchived: true, archiveReason: r.value, archivedAt: new Date().toISOString() }),
+                        });
+                        router.push("/board");
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-zinc-600 hover:bg-zinc-50 transition-colors">
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         <p className="text-zinc-500 mb-4">
           <InlineField
@@ -371,22 +438,37 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
             onSave={(v) => patchJd({ companyName: v })}
           />
         </p>
-        {/* Interactive status pills */}
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {STATUSES.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => updateStatus(s.value)}
-              className={`flex items-center gap-1.5 text-xs rounded-full px-2.5 py-1 transition-colors ${
-                status === s.value
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-50 text-zinc-500 hover:bg-zinc-100 border border-zinc-100"
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-              {s.label}
-            </button>
-          ))}
+        {/* Status dropdown badge */}
+        <div className="relative mb-2" ref={statusRef}>
+          <button onClick={() => setStatusOpen(o => !o)}
+            className={`inline-flex items-center gap-2 text-sm font-semibold px-3.5 py-1.5 rounded-full border-[1.5px] transition-colors ${
+              status === "offer"        ? "bg-green-50 border-green-300 text-green-800" :
+              status === "rejected"     ? "bg-red-50 border-red-300 text-red-700" :
+              status === "interviewing" ? "bg-amber-50 border-amber-300 text-amber-800" :
+              status === "applied"      ? "bg-blue-50 border-blue-300 text-blue-800" :
+              "bg-zinc-100 border-zinc-200 text-zinc-700"
+            }`}>
+            <span className={`w-2 h-2 rounded-full ${STATUSES.find(s => s.value === status)?.dot ?? "bg-zinc-400"}`} />
+            {STATUSES.find(s => s.value === status)?.label ?? status}
+            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          {statusOpen && (
+            <div className="absolute top-full left-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-lg z-20 min-w-[190px] overflow-hidden">
+              {STATUSES.map(s => (
+                <button key={s.value}
+                  onClick={() => { updateStatus(s.value); setStatusOpen(false); }}
+                  className={`flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left hover:bg-zinc-50 transition-colors ${
+                    status === s.value ? "font-semibold text-zinc-900" : "text-zinc-600"
+                  }`}>
+                  <span className={`w-2 h-2 rounded-full ${s.dot}`} />
+                  {s.label}
+                  {status === s.value && <span className="ml-auto text-zinc-400 text-xs">✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {currentCompanyType && (
@@ -931,6 +1013,16 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
           )}
         </div>
       </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-zinc-900 text-white text-sm rounded-xl px-4 py-2.5 shadow-xl z-50 whitespace-nowrap">
+          {toast.msg}
+          <button onClick={undoStatus} className="text-violet-400 font-semibold hover:text-violet-300 transition-colors">
+            復原
+          </button>
+        </div>
       )}
     </div>
   );
