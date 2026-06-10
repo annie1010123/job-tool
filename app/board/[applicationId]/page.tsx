@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db/client";
 import ApplicationDetail from "../_components/ApplicationDetail";
 import ApplicationTabs from "./_components/ApplicationTabs";
+import ResumeUrlInput from "./_components/ResumeUrlInput";
 
 export default async function ApplicationPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const session = await auth();
@@ -74,6 +75,10 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
                 </p>
               </div>
             </div>
+            <ResumeUrlInput
+              applicationId={applicationId}
+              initialValue={app.resumeUrl ?? null}
+            />
             {!app.jd.externalUrl.startsWith("manual://") && (
               <a
                 href={app.jd.externalUrl}
