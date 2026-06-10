@@ -13,6 +13,8 @@ datasource db {
 
 model User {
   id             String    @id @default(cuid())
+  name           String?
+  image          String?
   email          String    @unique
   emailVerified  DateTime?
   createdAt      DateTime  @default(now())
@@ -180,9 +182,12 @@ model Application {
   appliedAt    DateTime?
   scheduledAt  DateTime?
   note        String?
-  aiQuestions Json     @default("[]")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  aiQuestions   Json      @default("[]")
+  isArchived    Boolean   @default(false)
+  archiveReason String?
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   jd               Jd                @relation(fields: [jdId], references: [id], onDelete: Cascade)
