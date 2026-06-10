@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(body.scheduledAt !== undefined && { scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null }),
       ...(body.note !== undefined && { note: body.note }),
       ...(body.aiQuestions !== undefined && { aiQuestions: body.aiQuestions }),
+      ...(body.resumeUrl !== undefined && { resumeUrl: body.resumeUrl ?? null }),
       ...(body.isArchived    !== undefined && { isArchived: body.isArchived }),
       ...(body.archiveReason !== undefined && { archiveReason: body.archiveReason ?? null }),
       ...(body.archivedAt    !== undefined && { archivedAt: body.archivedAt ? new Date(body.archivedAt) : null }),

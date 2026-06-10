@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       create: {
         userId: session.user.id,
         jdId: jd.id,
-        status: "not_applied",
+        status: body.status ?? "not_applied",
         companyType: companyType ?? null,
       },
       include: { jd: { select: { title: true, companyName: true } } },
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
   const application = await prisma.application.upsert({
     where: { userId_jdId: { userId: session.user.id, jdId: body.jdId } },
     update: {},
-    create: { userId: session.user.id, jdId: body.jdId, status: "not_applied" },
+    create: { userId: session.user.id, jdId: body.jdId, status: body.status ?? "not_applied" },
     include: { jd: { select: { title: true, companyName: true } } },
   });
 
