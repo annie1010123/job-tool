@@ -74,7 +74,6 @@ export default function ApplicationTabs({
       {/* Tab content */}
       <div className="p-6">
         {activeTab === "ai" && (
-          /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
           // @ts-ignore -- Task 9 will add jdDescription + onGoToReview to AiQuestionsEvolved
           <AiQuestionsEvolved applicationId={applicationId} initialQuestions={aiQuestions} jdDescription={jdDescription} onGoToReview={goToReview} />
         )}
