@@ -32,7 +32,14 @@ const COMPANY_TYPE_BADGES: Record<string, { bg: string; color: string; label: st
   traditional: { bg: "#f7f6f3", color: "#888780", label: "傳產" },
 };
 
-const TYPE_OPTIONS = ["全部", "startup", "large", "traditional"] as const;
+const SOURCE_FILTERS: { value: string; label: string }[] = [
+  { value: "全部", label: "全部來源" },
+  { value: "104", label: "104" },
+  { value: "cake", label: "Cake" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "yourator", label: "Yourator" },
+  { value: "manual", label: "手動新增" },
+];
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
@@ -42,7 +49,7 @@ function formatDate(dateStr: string) {
 export default function SavedJobList({ initialApps }: { initialApps: WatchingApp[] }) {
   const router = useRouter();
   const [apps, setApps] = useState<WatchingApp[]>(initialApps);
-  const [typeFilter, setTypeFilter] = useState<string>("全部");
+  const [sourceFilter, setSourceFilter] = useState<string>("全部");
 
   useEffect(() => {
     setApps(initialApps);
@@ -51,7 +58,7 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
   const [applyingId, setApplyingId] = useState<string | null>(null);
 
   const filtered = apps.filter((a) =>
-    typeFilter === "全部" || a.companyType === typeFilter
+    sourceFilter === "全部" || a.jd.source === sourceFilter
   );
 
   async function handleApply(appId: string) {
@@ -93,9 +100,9 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
       {/* Filter + Add button */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {TYPE_OPTIONS.map((t) => (
-            <button key={t} onClick={() => setTypeFilter(t)} style={typeFilter === t ? pillActive : pillBase}>
-              {t === "全部" ? "全部類型" : (COMPANY_TYPE_BADGES[t]?.label ?? t)}
+          {SOURCE_FILTERS.map((s) => (
+            <button key={s.value} onClick={() => setSourceFilter(s.value)} style={sourceFilter === s.value ? pillActive : pillBase}>
+              {s.label}
             </button>
           ))}
         </div>
@@ -125,7 +132,11 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
                   background: "#fff", borderRadius: 12, border: "0.5px solid rgba(0,0,0,0.1)",
                   padding: "14px 18px", display: "flex", alignItems: "center",
                   justifyContent: "space-between", gap: 12,
+                  cursor: "pointer", transition: "border-color 0.15s",
                 }}
+                onClick={() => router.push(`/board/${app.id}`)}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.25)")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(0,0,0,0.1)")}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3, flexWrap: "wrap" }}>
@@ -145,12 +156,12 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
                   <div style={{ fontSize: 11, color: "#aaa8a0", marginTop: 4 }}>收藏於 {formatDate(app.createdAt)}</div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                   <a
                     href={`/board/${app.id}`}
                     style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 20, border: "0.5px solid rgba(0,0,0,0.15)", background: "#fff", color: "#1a1a18", textDecoration: "none", whiteSpace: "nowrap" }}
                   >
-                    準備推薦信
+                    投遞準備
                   </a>
                   <button
                     onClick={() => handleApply(app.id)}
