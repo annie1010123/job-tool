@@ -1,3 +1,4 @@
+import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/client";
@@ -10,12 +11,21 @@ export default async function BoardPage() {
   if (!session?.user?.id) redirect("/login");
 
   const applications = await prisma.application.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, isArchived: false },
     include: {
       jd: { select: { id: true, title: true, companyName: true, externalUrl: true, postedAt: true } },
       interviewRecords: true,
     },
     orderBy: { createdAt: "desc" },
+  });
+
+  const archivedApplications = await prisma.application.findMany({
+    where: { userId: session.user.id, isArchived: true },
+    include: {
+      jd: { select: { id: true, title: true, companyName: true, externalUrl: true, postedAt: true } },
+      interviewRecords: true,
+    },
+    orderBy: { archivedAt: "desc" },
   });
 
   return (
@@ -34,7 +44,18 @@ export default async function BoardPage() {
           <div className="text-sm text-zinc-400">{applications.length} 個職缺追蹤中</div>
         </div>
 
-        <KanbanBoard initialApplications={JSON.parse(JSON.stringify(applications))} />
+        {/* initialArchivedApplications will be properly typed in Task 6 */}
+        {(() => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const Board = KanbanBoard as React.ComponentType<{ initialApplications: unknown; initialArchivedApplications: unknown }>;
+          return (
+            <Board
+              initialApplications={JSON.parse(JSON.stringify(applications))}
+              initialArchivedApplications={JSON.parse(JSON.stringify(archivedApplications))}
+            />
+          );
+        })()}
       </div>
     </div>
   );
