@@ -41,7 +41,7 @@ export default async function BoardPage() {
             <h1 className="text-2xl font-semibold text-zinc-900">投遞追蹤</h1>
             <p className="text-sm text-zinc-500 mt-0.5">追蹤每個職缺的投遞進度與面試紀錄</p>
           </div>
-          <div className="text-sm text-zinc-400">{applications.length} 個職缺追蹤中</div>
+          {/* count rendered inside KanbanBoard to stay in sync with archive/restore */}
         </div>
 
         {/* initialArchivedApplications will be properly typed in Task 6 */}

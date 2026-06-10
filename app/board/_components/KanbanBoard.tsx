@@ -323,7 +323,7 @@ export default function KanbanBoard({
         />
       )}
 
-      {/* Header: mode toggle + add button */}
+      {/* Header: mode toggle + count + add button */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex bg-white border border-zinc-200 rounded-xl overflow-hidden">
           {(["list", "kanban"] as const).map(mode => (
@@ -335,12 +335,15 @@ export default function KanbanBoard({
             </button>
           ))}
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="text-sm bg-zinc-900 text-white rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors"
-        >
-          + 新增職缺
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-zinc-400">{apps.length} 個職缺追蹤中</span>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="text-sm bg-zinc-900 text-white rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors"
+          >
+            + 新增職缺
+          </button>
+        </div>
       </div>
 
       {apps.length === 0 && archived.length === 0 ? (
