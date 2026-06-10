@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import BoardFunnel from "./BoardFunnel";
+import BoardListView, { type ListApp } from "./BoardListView";
+import ArchiveSection, { type ArchivedApp } from "./ArchiveSection";
 
 // 詳細頁狀態下拉用（5 個選項）
 export const STATUSES = [
@@ -43,6 +46,14 @@ interface App {
   createdAt: string;
   scheduledAt: string | null;
   jd: Jd;
+  interviewRecords: unknown[];
+}
+
+interface ArchivedAppShell extends ArchivedApp {
+  status: string;
+  companyType: string | null;
+  createdAt: string;
+  scheduledAt: string | null;
   interviewRecords: unknown[];
 }
 
@@ -228,11 +239,19 @@ function AddJobModal({ onClose, onAdded }: { onClose: () => void; onAdded: (app:
 
 // ─── Kanban Board ─────────────────────────────────────────────────────────────
 
-export default function KanbanBoard({ initialApplications }: { initialApplications: App[] }) {
+export default function KanbanBoard({
+  initialApplications,
+  initialArchivedApplications = [],
+}: {
+  initialApplications: App[];
+  initialArchivedApplications?: ArchivedAppShell[];
+}) {
   const router = useRouter();
   const [apps, setApps] = useState<App[]>(initialApplications);
   const [showAddModal, setShowAddModal] = useState(false);
   const dragId = useRef<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+  const [archived, setArchived] = useState<ArchivedAppShell[]>(initialArchivedApplications);
 
   // Sync with server data after soft navigation (e.g. returning from detail page)
   useEffect(() => {
@@ -251,6 +270,29 @@ export default function KanbanBoard({ initialApplications }: { initialApplicatio
   async function deleteApp(appId: string) {
     setApps((prev) => prev.filter((a) => a.id !== appId));
     await fetch(`/api/applications/${appId}`, { method: "DELETE" });
+  }
+
+  async function archiveApp(appId: string, reason: string) {
+    const app = apps.find(a => a.id === appId);
+    if (!app) return;
+    setApps(prev => prev.filter(a => a.id !== appId));
+    const now = new Date().toISOString();
+    setArchived(prev => [{ ...app, archiveReason: reason, archivedAt: now }, ...prev]);
+    await fetch(`/api/applications/${appId}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isArchived: true, archiveReason: reason, archivedAt: now }),
+    });
+  }
+
+  async function restoreApp(appId: string) {
+    const app = archived.find(a => a.id === appId);
+    if (!app) return;
+    setArchived(prev => prev.filter(a => a.id !== appId));
+    setApps(prev => [{ ...app, status: "applied" } as unknown as App, ...prev]);
+    await fetch(`/api/applications/${appId}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isArchived: false, archiveReason: null, archivedAt: null }),
+    });
   }
 
   function onDragStart(appId: string) {
@@ -281,8 +323,18 @@ export default function KanbanBoard({ initialApplications }: { initialApplicatio
         />
       )}
 
-      {/* Add button */}
-      <div className="flex justify-end mb-4">
+      {/* Header: mode toggle + add button */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex bg-white border border-zinc-200 rounded-xl overflow-hidden">
+          {(["list", "kanban"] as const).map(mode => (
+            <button key={mode} onClick={() => setViewMode(mode)}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors ${
+                viewMode === mode ? "bg-zinc-900 text-white" : "text-zinc-500 hover:text-zinc-700"
+              }`}>
+              {mode === "list" ? "清單" : "看板"}
+            </button>
+          ))}
+        </div>
         <button
           onClick={() => setShowAddModal(true)}
           className="text-sm bg-zinc-900 text-white rounded-lg px-4 py-2 hover:bg-zinc-700 transition-colors"
@@ -291,7 +343,7 @@ export default function KanbanBoard({ initialApplications }: { initialApplicatio
         </button>
       </div>
 
-      {apps.length === 0 ? (
+      {apps.length === 0 && archived.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="mb-4">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-200 mx-auto">
@@ -310,78 +362,94 @@ export default function KanbanBoard({ initialApplications }: { initialApplicatio
           </button>
         </div>
       ) : (
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {columns.map((col) => (
-            <div
-              key={col.value}
-              className="flex-shrink-0 w-64"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => onDropColumn(col.statuses[0] as AppStatus)}
-            >
-              {/* Column header */}
-              <div className={`flex items-center gap-2 mb-3 px-3 py-2 rounded-xl ${col.colBg}`}>
-                <span className={`w-2 h-2 rounded-full ${col.dot}`} />
-                <span className="text-sm font-semibold text-zinc-700">{col.label}</span>
-                <span className="ml-auto text-xs font-medium text-zinc-500 bg-white rounded-full px-2 py-0.5 border border-zinc-100 min-w-[20px] text-center">
-                  {col.cards.length}
-                </span>
-              </div>
+        <>
+          <BoardFunnel applications={apps} archivedCount={archived.length} />
 
-              {/* Cards */}
-              <div className="flex flex-col gap-2 min-h-16">
-                {col.cards.map((app) => (
-                  <div
-                    key={app.id}
-                    draggable
-                    onDragStart={() => onDragStart(app.id)}
-                    className="bg-white rounded-xl border border-zinc-100 p-4 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all cursor-grab active:cursor-grabbing"
-                  >
-                    {/* Card body — click to detail */}
-                    <div className="cursor-pointer" onClick={() => router.push(`/board/${app.id}`)}>
-                      <div className="flex items-start justify-between gap-2 mb-0.5">
-                        <p className="text-sm font-medium text-zinc-900 leading-snug line-clamp-2">
-                          {app.jd.title}
-                        </p>
-                        {app.companyType && (() => {
-                          const ct = COMPANY_TYPES.find((c) => c.value === app.companyType);
-                          return ct ? (
-                            <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 ${ct.badge}`}>
-                              {ct.label}
-                            </span>
-                          ) : null;
-                        })()}
-                      </div>
-                      <p className="text-xs text-zinc-500 mb-3">{app.jd.companyName}</p>
-                      {app.scheduledAt ? (
-                        <p className="text-xs font-medium" style={{ color: "#A32D2D" }}>
-                          面試：{formatDate(app.scheduledAt)}（{getDaysLabel(app.scheduledAt)}）
-                        </p>
-                      ) : (
-                        <p className="text-xs text-zinc-300">暫無面試邀約</p>
-                      )}
-                    </div>
-
-                    {/* Delete button — only visible on hover */}
-                    <div className="mt-3 pt-2 border-t border-zinc-50 flex justify-end" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => {
-                          if (confirm(`確定刪除「${app.jd.title}」？`)) deleteApp(app.id);
-                        }}
-                        className="text-xs text-zinc-300 hover:text-red-400 transition-colors"
-                      >
-                        刪除
-                      </button>
-                    </div>
+          {viewMode === "list" ? (
+            <BoardListView apps={apps as unknown as ListApp[]} onArchive={archiveApp} />
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {columns.map((col) => (
+                <div
+                  key={col.value}
+                  className="flex-shrink-0 w-64"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => onDropColumn(col.statuses[0] as AppStatus)}
+                >
+                  {/* Column header */}
+                  <div className={`flex items-center gap-2 mb-3 px-3 py-2 rounded-xl ${col.colBg}`}>
+                    <span className={`w-2 h-2 rounded-full ${col.dot}`} />
+                    <span className="text-sm font-semibold text-zinc-700">{col.label}</span>
+                    <span className="ml-auto text-xs font-medium text-zinc-500 bg-white rounded-full px-2 py-0.5 border border-zinc-100 min-w-[20px] text-center">
+                      {col.cards.length}
+                    </span>
                   </div>
-                ))}
 
-                {col.cards.length === 0 && (
-                  <div className="rounded-xl border border-dashed border-zinc-100 h-16" />
-                )}
-              </div>
+                  {/* Cards */}
+                  <div className="flex flex-col gap-2 min-h-16">
+                    {col.cards.map((app) => (
+                      <div
+                        key={app.id}
+                        draggable
+                        onDragStart={() => onDragStart(app.id)}
+                        className="bg-white rounded-xl border border-zinc-100 p-4 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all cursor-grab active:cursor-grabbing"
+                      >
+                        {/* Card body — click to detail */}
+                        <div className="cursor-pointer" onClick={() => router.push(`/board/${app.id}`)}>
+                          <div className="flex items-start justify-between gap-2 mb-0.5">
+                            <p className="text-sm font-medium text-zinc-900 leading-snug line-clamp-2">
+                              {app.jd.title}
+                            </p>
+                            {app.companyType && (() => {
+                              const ct = COMPANY_TYPES.find((c) => c.value === app.companyType);
+                              return ct ? (
+                                <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 ${ct.badge}`}>
+                                  {ct.label}
+                                </span>
+                              ) : null;
+                            })()}
+                          </div>
+                          <p className="text-xs text-zinc-500 mb-2">{app.jd.companyName}</p>
+                          {/* Round badge for interviewing */}
+                          {app.status === "interviewing" && (app.interviewRecords as unknown[]).length > 0 && (
+                            <span className="inline-block text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5 mb-2">
+                              第 {(app.interviewRecords as unknown[]).length} 輪
+                            </span>
+                          )}
+                          {app.scheduledAt ? (
+                            <p className="text-xs font-medium" style={{ color: "#A32D2D" }}>
+                              面試：{formatDate(app.scheduledAt)}（{getDaysLabel(app.scheduledAt)}）
+                            </p>
+                          ) : (
+                            <p className="text-xs text-zinc-300">暫無面試邀約</p>
+                          )}
+                        </div>
+
+                        {/* Delete button */}
+                        <div className="mt-3 pt-2 border-t border-zinc-50 flex justify-end" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => {
+                              if (confirm(`確定刪除「${app.jd.title}」？`)) deleteApp(app.id);
+                            }}
+                            className="text-xs text-zinc-300 hover:text-red-400 transition-colors"
+                          >
+                            刪除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {col.cards.length === 0 && (
+                      <div className="rounded-xl border border-dashed border-zinc-100 h-16" />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+
+          <ArchiveSection apps={archived} onRestore={restoreApp} />
+        </>
       )}
     </>
   );
