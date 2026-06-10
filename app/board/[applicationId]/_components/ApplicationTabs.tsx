@@ -30,7 +30,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "ai", label: "面試準備" },
   { key: "cover-letter", label: "推薦信" },
   { key: "review", label: "面試復盤" },
-  { key: "info", label: "基本資訊" },
+  { key: "info", label: "職缺資訊" },
 ];
 
 export default function ApplicationTabs({
@@ -38,34 +38,33 @@ export default function ApplicationTabs({
   aiQuestions,
   reviews,
   children,
+  defaultTab = "ai",
+  jdDescription,
 }: {
   applicationId: string;
   aiQuestions: AiQuestion[];
   reviews: InterviewReview[];
   children: React.ReactNode;
+  defaultTab?: TabKey;
+  jdDescription?: string | null;
 }) {
-  const [activeTab, setActiveTab] = useState<TabKey>("ai");
+  const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
+
+  function goToReview() { setActiveTab("review"); }
 
   return (
-    <div style={{ background: "#fff", borderRadius: 16, border: "0.5px solid rgba(0,0,0,0.1)", overflow: "hidden" }}>
+    <div className="bg-white rounded-2xl border border-zinc-100 shadow-sm overflow-hidden">
       {/* Tab bar */}
-      <div style={{ display: "flex", borderBottom: "0.5px solid rgba(0,0,0,0.06)", padding: "8px 8px 0" }}>
+      <div className="flex border-b border-zinc-100 px-2 pt-2">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            style={{
-              padding: "10px 16px",
-              fontSize: 13,
-              fontWeight: 500,
-              background: "none",
-              border: "none",
-              borderBottom: activeTab === tab.key ? "2px solid #111" : "2px solid transparent",
-              color: activeTab === tab.key ? "#111" : "#999",
-              cursor: "pointer",
-              marginBottom: -1,
-              transition: "color 0.15s",
-            }}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              activeTab === tab.key
+                ? "border-zinc-900 text-zinc-900"
+                : "border-transparent text-zinc-400 hover:text-zinc-600"
+            }`}
           >
             {tab.label}
           </button>
@@ -73,9 +72,11 @@ export default function ApplicationTabs({
       </div>
 
       {/* Tab content */}
-      <div style={{ padding: 24 }}>
+      <div className="p-6">
         {activeTab === "ai" && (
-          <AiQuestionsEvolved applicationId={applicationId} initialQuestions={aiQuestions} />
+          /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+          // @ts-ignore -- Task 9 will add jdDescription + onGoToReview to AiQuestionsEvolved
+          <AiQuestionsEvolved applicationId={applicationId} initialQuestions={aiQuestions} jdDescription={jdDescription} onGoToReview={goToReview} />
         )}
         {activeTab === "cover-letter" && (
           <CoverLetterTab applicationId={applicationId} />
