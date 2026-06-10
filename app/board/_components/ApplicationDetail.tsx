@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { STATUSES, COMPANY_TYPES } from "./KanbanBoard";
 
@@ -195,6 +195,15 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
   const archiveRef  = useRef<HTMLDivElement>(null);
   const toastTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [showChecklist, setShowChecklist] = useState(false);
+  const [checklistChecked, setChecklistChecked] = useState<boolean[]>([]);
+
+  const checklistQuestions = useMemo(() => {
+    const qs = (application.aiQuestions ?? []) as Array<{ question?: string; round?: number; hidden?: boolean }>;
+    const maxRound = Math.max(...qs.map(q => q.round ?? 1), 1);
+    return qs.filter(q => (q.round ?? 1) === maxRound && !q.hidden && q.question);
+  }, [application.aiQuestions]);
+
   useEffect(() => {
     function handle(e: MouseEvent) {
       if (statusRef.current  && !statusRef.current.contains(e.target as Node))  setStatusOpen(false);
@@ -226,6 +235,11 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
     const label = STATUSES.find(s => s.value === newStatus)?.label ?? newStatus;
     setToast({ msg: `狀態已更新為「${label}」`, prevStatus: prev });
     toastTimer.current = setTimeout(() => setToast(null), 4000);
+    // Trigger checklist when moving from interviewing → offer/rejected
+    if (prev === "interviewing" && (newStatus === "offer" || newStatus === "rejected")) {
+      setChecklistChecked(checklistQuestions.map(() => false));
+      setShowChecklist(true);
+    }
   }
 
   async function undoStatus() {
@@ -1013,6 +1027,55 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
           )}
         </div>
       </div>
+      )}
+
+      {/* Post-interview checklist modal */}
+      {showChecklist && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 mb-2">
+            <h3 className="text-base font-semibold text-zinc-900 mb-1">面試結束了！</h3>
+            <p className="text-sm text-zinc-500 mb-4">哪些題目有被問到？快速勾選一下：</p>
+            <div className="space-y-1.5 max-h-60 overflow-y-auto mb-5">
+              {checklistQuestions.map((q, i) => (
+                <label key={i} className="flex items-start gap-3 cursor-pointer p-2 rounded-lg hover:bg-zinc-50">
+                  <input
+                    type="checkbox"
+                    checked={checklistChecked[i] ?? false}
+                    onChange={e => setChecklistChecked(prev => prev.map((v, idx) => idx === i ? e.target.checked : v))}
+                    className="mt-0.5 w-4 h-4 rounded accent-zinc-900 flex-shrink-0"
+                  />
+                  <span className="text-sm text-zinc-700 leading-relaxed">{q.question}</span>
+                </label>
+              ))}
+              {checklistQuestions.length === 0 && (
+                <p className="text-sm text-zinc-400 text-center py-4">還沒有 AI 面試準備題目</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowChecklist(false)}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 text-sm text-zinc-500 hover:bg-zinc-50 transition-colors">
+                跳過
+              </button>
+              <button
+                onClick={async () => {
+                  const allQs = (application.aiQuestions ?? []) as unknown as Array<Record<string, unknown>>;
+                  const updated = allQs.map(q => {
+                    const cIdx = checklistQuestions.findIndex(cq => cq.question === q.question);
+                    return cIdx >= 0 && checklistChecked[cIdx] ? { ...q, askedInInterview: true } : q;
+                  });
+                  await fetch(`/api/applications/${application.id}`, {
+                    method: "PATCH", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ aiQuestions: updated }),
+                  });
+                  setShowChecklist(false);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-zinc-900 text-sm text-white font-medium hover:bg-zinc-700 transition-colors">
+                完成
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Toast */}
