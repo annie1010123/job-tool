@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ResumeUrlInput from "./ResumeUrlInput";
 
 type Tone = "formal" | "casual" | "concise";
 
@@ -10,7 +11,13 @@ const TONES: { value: Tone; label: string }[] = [
   { value: "concise", label: "簡潔" },
 ];
 
-export default function CoverLetterTab({ applicationId }: { applicationId: string }) {
+export default function CoverLetterTab({
+  applicationId,
+  initialResumeUrl,
+}: {
+  applicationId: string;
+  initialResumeUrl: string | null;
+}) {
   const [tone, setTone] = useState<Tone>("formal");
   const [coverLetter, setCoverLetter] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,6 +58,11 @@ export default function CoverLetterTab({ applicationId }: { applicationId: strin
 
   return (
     <div>
+      {/* 履歷連結 */}
+      <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: "0.5px solid rgba(0,0,0,0.08)" }}>
+        <ResumeUrlInput applicationId={applicationId} initialValue={initialResumeUrl} />
+      </div>
+
       <div style={{ marginBottom: 20 }}>
         <p style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1a", marginBottom: 4 }}>AI 推薦信生成</p>
         <p style={{ fontSize: 12, color: "#999", marginTop: 2 }}>根據你的履歷和職缺描述，自動生成推薦信草稿</p>

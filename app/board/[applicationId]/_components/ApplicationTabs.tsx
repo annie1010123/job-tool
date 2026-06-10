@@ -28,7 +28,7 @@ interface InterviewReview {
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "info", label: "職缺資訊" },
-  { key: "cover-letter", label: "推薦信" },
+  { key: "cover-letter", label: "投遞準備" },
   { key: "ai", label: "面試準備" },
   { key: "review", label: "面試復盤" },
 ];
@@ -40,6 +40,7 @@ export default function ApplicationTabs({
   children,
   defaultTab = "ai",
   jdDescription,
+  resumeUrl,
 }: {
   applicationId: string;
   aiQuestions: AiQuestion[];
@@ -47,6 +48,7 @@ export default function ApplicationTabs({
   children: React.ReactNode;
   defaultTab?: TabKey;
   jdDescription?: string | null;
+  resumeUrl?: string | null;
 }) {
   const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
 
@@ -78,7 +80,7 @@ export default function ApplicationTabs({
           <AiQuestionsEvolved applicationId={applicationId} initialQuestions={aiQuestions} jdDescription={jdDescription} onGoToReview={goToReview} />
         )}
         {activeTab === "cover-letter" && (
-          <CoverLetterTab applicationId={applicationId} />
+          <CoverLetterTab applicationId={applicationId} initialResumeUrl={resumeUrl ?? null} />
         )}
         {activeTab === "review" && (
           <ReviewTab applicationId={applicationId} reviews={reviews} />
