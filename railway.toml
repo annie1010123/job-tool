@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r worker/crawler/requirements.txt"
+
+[deploy]
+startCommand = "python worker/crawler/run.py"
+cronSchedule = "0 13 * * *"
+restartPolicyType = "never"
