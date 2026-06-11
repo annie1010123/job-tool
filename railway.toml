@@ -1,8 +1,6 @@
 [build]
-builder = "nixpacks"
-buildCommand = ""
+builder = "dockerfile"
 
 [deploy]
-startCommand = "python worker/crawler/run.py"
 cronSchedule = "0 13 * * *"
 restartPolicyType = "never"
