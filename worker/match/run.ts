@@ -11,10 +11,7 @@ async function main() {
   dailyBatch.setHours(0, 0, 0, 0);
 
   const users = await prisma.user.findMany({
-    where: {
-      resume: { isNot: null },
-      jobIntent: { isNot: null },
-    },
+    where: { jobIntent: { isNot: null } },
     select: { id: true, email: true },
   });
 

@@ -29,6 +29,7 @@ model User {
   applications     Application[]
   savedJobs        SavedJob[]
   questionBank     QuestionBank[]
+  workExperiences  WorkExperience[]
 }
 
 model Account {
@@ -259,6 +260,24 @@ model InterviewReview {
   createdAt       DateTime @default(now())
 
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+// ─── Work Experience ─────────────────────────────────────────────────────────
+
+model WorkExperience {
+  id          String   @id @default(cuid())
+  userId      String
+  company     String
+  role        String
+  startDate   String?
+  endDate     String?
+  description String   @db.Text
+  skills      Json     @default("[]")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ─── Question Bank ───────────────────────────────────────────────────────────

@@ -9,14 +9,16 @@ export async function expandIntent(rawInput: string): Promise<string[]> {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
   const resp = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: "llama-3.3-70b-versatile",
     temperature: 0,
+    max_tokens: 300,
     messages: [
       {
         role: "system",
-        content: `你是台灣求職搜尋助手。把使用者的求職意圖展開成 8~12 個繁體中文搜尋關鍵字，供 104 人力銀行使用。
-只輸出 JSON array of strings，不要任何解釋或 markdown。
-例："前端工程師，想做 SaaS" → ["前端工程師","Frontend Engineer","React","Vue","TypeScript","SaaS前端","網頁工程師","UI工程師"]`,
+        content: `你是台灣求職搜尋助手。把使用者的求職意圖展開成 10~14 個搜尋關鍵字（JSON array），用於比對 104 職缺標題與描述。
+包含：職稱變體（2~3 個）、核心技能與工具（4~6 個）、工作內容關鍵詞（3~4 個）。
+只輸出 JSON array，不要 markdown 或解釋。
+例："PM 實習生" → ["專案管理實習","Project Manager Intern","產品管理實習","PRD","需求分析","時程控管","Agile","Scrum","利害關係人溝通","產品規格","專案追蹤"]`,
       },
       { role: "user", content: rawInput },
     ],

@@ -23,12 +23,11 @@ export async function sendPreviewEmail(userId: string, email: string) {
     return { ...m, finalScore: m.finalScore * boost };
   }).sort((a, b) => b.finalScore - a.finalScore);
 
-  const companyCounts = new Map<string, number>();
+  const seen = new Set<string>();
   const top = allBoosted.filter((m) => {
     const company = jdMap[m.jdId]?.companyName ?? "";
-    const count = companyCounts.get(company) ?? 0;
-    if (count >= 2) return false;
-    companyCounts.set(company, count + 1);
+    if (seen.has(company)) return false;
+    seen.add(company);
     return true;
   }).slice(0, 10);
 

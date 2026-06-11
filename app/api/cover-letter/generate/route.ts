@@ -7,7 +7,11 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { applicationId, jdId, tone } = await req.json();
+  const { applicationId, jdId, tone } = await req.json() as {
+    applicationId?: string;
+    jdId?: string;
+    tone?: string;
+  };
 
   let jd;
   if (applicationId) {
@@ -25,9 +29,16 @@ export async function POST(req: NextRequest) {
 
   if (!jd) return NextResponse.json({ error: "JD not found" }, { status: 404 });
 
-  const resume = await prisma.resume.findUnique({ where: { userId: session.user.id } });
-  if (!resume) {
-    return NextResponse.json({ error: "請先上傳履歷" }, { status: 400 });
+  const [resume, workExperiences] = await Promise.all([
+    prisma.resume.findUnique({ where: { userId: session.user.id } }),
+    prisma.workExperience.findMany({
+      where: { userId: session.user.id },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    }),
+  ]);
+
+  if (!resume && workExperiences.length === 0) {
+    return NextResponse.json({ error: "請先在「個人資料」填寫工作經歷，或上傳履歷" }, { status: 400 });
   }
 
   try {
@@ -36,9 +47,16 @@ export async function POST(req: NextRequest) {
       jdCompanyName: jd.companyName,
       jdDescription: jd.description,
       jdSkills: (jd.skills as string[]) ?? [],
-      resumeTitle: resume.title,
-      resumeSkills: (resume.skills as string[]) ?? [],
-      resumeSeniority: resume.seniority,
+      workExperiences: workExperiences.map((e) => ({
+        company: e.company,
+        role: e.role,
+        startDate: e.startDate,
+        endDate: e.endDate,
+        description: e.description,
+        skills: (e.skills as string[]) ?? [],
+      })),
+      resumeTitle: resume?.title ?? null,
+      resumeSeniority: resume?.seniority ?? null,
       tone: (tone as Tone) ?? "formal",
     });
 

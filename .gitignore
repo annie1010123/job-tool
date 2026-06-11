@@ -55,3 +55,7 @@ evaluation/*.png
 # Playwright
 playwright-report/
 test-results/
+
+# Brainstorm mockups
+.superpowers/
+*.pdf

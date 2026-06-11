@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "JobPilot",
-  description: "每天早上 8 點，自動推薦 5-10 個符合你履歷的台北/新北職缺",
+  description: "每天早上 8 點，AI 自動從 104 篩選最相關職缺寄到你的信箱",
 };
 
 export default function RootLayout({

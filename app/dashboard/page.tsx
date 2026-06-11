@@ -59,6 +59,12 @@ export default async function DashboardPage() {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <a
+              href="/profile"
+              style={{ fontSize: 13, fontWeight: 500, padding: "8px 18px", borderRadius: 20, border: "0.5px solid rgba(0,0,0,0.2)", background: "#fff", color: "#1a1a18", textDecoration: "none", whiteSpace: "nowrap", transition: "all 0.15s" }}
+            >
+              個人資料
+            </a>
+            <a
               href="/saved"
               style={{ fontSize: 13, fontWeight: 500, padding: "8px 18px", borderRadius: 20, border: "0.5px solid rgba(0,0,0,0.2)", background: "#fff", color: "#1a1a18", textDecoration: "none", whiteSpace: "nowrap", transition: "all 0.15s" }}
             >
