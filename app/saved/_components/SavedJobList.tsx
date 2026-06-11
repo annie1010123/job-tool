@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import AddJobModal from "./AddJobModal";
 
 interface WatchingApp {
@@ -118,7 +119,7 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
       {filtered.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 0", color: "#888780" }}>
           <p style={{ fontSize: 15 }}>還沒有收藏的職缺</p>
-          <a href="/dashboard" style={{ fontSize: 13, color: "#888780", marginTop: 8, display: "inline-block" }}>→ 去推薦頁找職缺</a>
+          <Link href="/dashboard" style={{ fontSize: 13, color: "#888780", marginTop: 8, display: "inline-block" }}>→ 去推薦頁找職缺</Link>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function TrackButton({ jdId }: { jdId: string }) {
   const [loading, setLoading] = useState(false);
@@ -21,12 +22,12 @@ export default function TrackButton({ jdId }: { jdId: string }) {
     return (
       <div className="flex items-center gap-2">
         <span className="text-xs text-green-600 font-medium">已收藏 ✓</span>
-        <a
+        <Link
           href="/saved"
           className="text-xs text-zinc-400 hover:text-zinc-700 underline underline-offset-2 transition-colors"
         >
           去收藏區
-        </a>
+        </Link>
       </div>
     );
   }

@@ -61,6 +61,9 @@ export default function AiQuestionsEvolved({
   const [currentRound, setCurrentRound] = useState(1);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualText, setManualText] = useState("");
+  const [manualType, setManualType] = useState<AiQuestion["type"]>("行為題");
 
   const rounds = [...new Set(questions.map(q => q.round))].sort();
 
@@ -108,10 +111,11 @@ export default function AiQuestionsEvolved({
   }
 
   function handleAddManual() {
-    const text = prompt("輸入題目內容：");
-    if (!text?.trim()) return;
-    const newQ = normalize({ question: text.trim(), type: "行為題", round: currentRound });
+    if (!manualText.trim()) return;
+    const newQ = normalize({ question: manualText.trim(), type: manualType, round: currentRound });
     saveQuestions([...questions, newQ]);
+    setManualText("");
+    setShowManualInput(false);
   }
 
   const visibleForRound = questions.filter(q => q.round === currentRound && !q.hidden);
@@ -152,8 +156,8 @@ export default function AiQuestionsEvolved({
           </button>
         </div>
         <div className="flex-1" />
-        <button onClick={handleAddManual}
-          className="text-xs font-medium px-3 py-1.5 border border-zinc-200 rounded-lg text-zinc-600 hover:border-zinc-400 transition-colors">
+        <button onClick={() => setShowManualInput(v => !v)}
+          className={`text-xs font-medium px-3 py-1.5 border rounded-lg transition-colors ${showManualInput ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 text-zinc-600 hover:border-zinc-400"}`}>
           ＋ 手動加題
         </button>
         <button onClick={appendQuestions} disabled={loading}
@@ -161,6 +165,37 @@ export default function AiQuestionsEvolved({
           {loading ? "生成中…" : "補充題目"}
         </button>
       </div>
+
+      {/* Manual add input */}
+      {showManualInput && (
+        <div className="mb-3 p-3 border border-zinc-200 rounded-xl bg-zinc-50 flex flex-col gap-2">
+          <textarea
+            autoFocus
+            value={manualText}
+            onChange={e => setManualText(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleAddManual(); } }}
+            placeholder="輸入題目內容，按 Enter 新增"
+            rows={2}
+            className="text-sm border border-zinc-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-zinc-400 bg-white w-full"
+          />
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {(["行為題","技術題","動機題","情境題"] as AiQuestion["type"][]).map(t => (
+                <button key={t} onClick={() => setManualType(t)}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${manualType === t ? "bg-zinc-900 text-white border-zinc-900" : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400"}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1" />
+            <button onClick={() => { setShowManualInput(false); setManualText(""); }} className="text-xs text-zinc-400 hover:text-zinc-600 px-2">取消</button>
+            <button onClick={handleAddManual} disabled={!manualText.trim()}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg bg-zinc-900 text-white disabled:opacity-40">
+              新增
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Progress bar */}
       {visibleForRound.length > 0 && (

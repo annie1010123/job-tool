@@ -1,8 +1,10 @@
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/client";
 import ApplicationDetail from "../_components/ApplicationDetail";
 import ApplicationTabs from "./_components/ApplicationTabs";
+import AppShell from "@/app/_components/AppShell";
 
 export default async function ApplicationPage({ params }: { params: Promise<{ applicationId: string }> }) {
   const session = await auth();
@@ -30,11 +32,11 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#f1efe8" }}>
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        <a href="/board" className="text-sm text-zinc-400 hover:text-zinc-700 transition-colors mb-6 inline-block">
-          ← 回看板
-        </a>
+    <AppShell>
+      <div className="max-w-2xl mx-auto px-6 py-10">
+        <Link href="/board" className="text-sm text-zinc-400 hover:text-zinc-700 transition-colors mb-6 inline-block">
+          ← 回求職追蹤
+        </Link>
 
         {/* Header card only — tabs handled by ApplicationTabs below */}
         <div className="mb-4">
@@ -102,6 +104,6 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
           </div>
         </ApplicationTabs>
       </div>
-    </div>
+    </AppShell>
   );
 }

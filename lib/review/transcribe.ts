@@ -1,8 +1,7 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 export async function transcribeAudio(audioBuffer: Buffer, filename: string): Promise<string> {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const file = new File([new Uint8Array(audioBuffer)], filename, { type: "audio/mpeg" });
 
   const response = await openai.audio.transcriptions.create({

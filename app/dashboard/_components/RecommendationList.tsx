@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 
 interface Jd {
   id: string;
@@ -104,7 +105,7 @@ export default function RecommendationList({
       {/* Summary strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "rgba(0,0,0,0.08)", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
         {STATUS_CONFIG.map((s) => (
-          <a
+          <Link
             key={s.value}
             href="/board"
             style={{ background: "#fff", padding: "14px 8px", textAlign: "center", textDecoration: "none", display: "block", transition: "background 0.15s" }}
@@ -113,7 +114,7 @@ export default function RecommendationList({
           >
             <div style={{ fontSize: 24, fontWeight: 500, color: s.color, lineHeight: 1 }}>{statMap[s.value] ?? 0}</div>
             <div style={{ fontSize: 11, color: "#888780", marginTop: 4 }}>{s.label}</div>
-          </a>
+          </Link>
         ))}
       </div>
 
@@ -125,7 +126,7 @@ export default function RecommendationList({
         >
           <span>求職意圖</span>
           <span style={{ fontSize: 10 }}>{showIntent ? "▲" : "▼"}</span>
-          <a href="/onboarding/intent" onClick={(e) => e.stopPropagation()} style={{ marginLeft: 6, color: "#888780", textDecoration: "underline", textUnderlineOffset: 2, fontSize: 12 }}>編輯</a>
+          <Link href="/onboarding/intent" onClick={(e) => e.stopPropagation()} style={{ marginLeft: 6, color: "#888780", textDecoration: "underline", textUnderlineOffset: 2, fontSize: 12 }}>編輯</Link>
         </button>
         {showIntent && (
           <div style={{ marginTop: 8, padding: "10px 14px", background: "#f7f6f3", borderRadius: 8, fontSize: 13, color: "#5f5e5a" }}>
