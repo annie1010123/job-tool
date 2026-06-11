@@ -158,12 +158,12 @@ export default function SavedJobList({ initialApps }: { initialApps: WatchingApp
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-                  <a
+                  <Link
                     href={`/board/${app.id}`}
                     style={{ fontSize: 12, fontWeight: 500, padding: "6px 14px", borderRadius: 20, border: "0.5px solid rgba(0,0,0,0.15)", background: "#fff", color: "#1a1a18", textDecoration: "none", whiteSpace: "nowrap" }}
                   >
                     投遞準備
-                  </a>
+                  </Link>
                   <button
                     onClick={() => handleApply(app.id)}
                     disabled={applyingId === app.id}
