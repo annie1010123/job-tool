@@ -63,6 +63,10 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
   const keywords = intent.expandedKeywords as string[];
   const fetchN = topN * 3;
 
+  // Only consider jobs crawled in the last 7 days
+  const recentCutoff = new Date();
+  recentCutoff.setDate(recentCutoff.getDate() - 7);
+
   // Check if user has resume embedding
   const resumeEmb = await prisma.resumeEmbedding.findFirst({
     where: { resume: { userId } },
@@ -88,7 +92,7 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
       FROM "JdEmbedding" je
       JOIN "Jd" j ON j.id = je."jdId"
       CROSS JOIN (SELECT embedding FROM "IntentEmbedding" WHERE "intentId" = ${intent.id}) ie
-      WHERE (${orClause})
+      WHERE j."crawledAt" >= ${recentCutoff} AND j."delistedAt" IS NULL AND (${orClause})
       ORDER BY "intentScore" DESC
       LIMIT ${fetchN}
     `;
@@ -104,6 +108,7 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
     FROM "JdEmbedding" je
     JOIN "Jd" j ON j.id = je."jdId"
     CROSS JOIN (SELECT embedding FROM "IntentEmbedding" WHERE "intentId" = ${intent.id}) ie
+    WHERE j."crawledAt" >= ${recentCutoff} AND j."delistedAt" IS NULL
     ORDER BY "intentScore" DESC
     LIMIT ${fetchN}
   `;

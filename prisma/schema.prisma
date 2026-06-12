@@ -118,15 +118,15 @@ model IntentEmbedding {
 // ─── Job Description ─────────────────────────────────────────────────────────
 
 model Jd {
-  id                  String   @id @default(cuid())
-  source              String   @default("104")
-  externalUrl         String   @unique
+  id                  String    @id @default(cuid())
+  source              String    @default("104")
+  externalUrl         String    @unique
   companyName         String
   title               String
-  skills              Json     @default("[]")
+  skills              Json      @default("[]")
   salaryRange         String?
   seniority           String?
-  remote              Boolean  @default(false)
+  remote              Boolean   @default(false)
   location            String?
   recruitmentActivity String?
   replyDays           String?
@@ -134,9 +134,12 @@ model Jd {
   description         String?
   postedAt            String?
   applicantCount      Int?
-  locationFiltered    Boolean  @default(false)
-  crawledAt           DateTime @default(now())
-  parseStatus         String   @default("ok")
+  locationFiltered    Boolean   @default(false)
+  crawledAt           DateTime  @default(now())
+  parseStatus         String    @default("ok")
+  delistedAt          DateTime?
+  contentHash         String?
+  contentUpdatedAt    DateTime?
 
   embedding        JdEmbedding?
   recommendations  Recommendation[]

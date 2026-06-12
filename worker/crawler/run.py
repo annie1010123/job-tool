@@ -225,18 +225,42 @@ def embed_jd(job: dict) -> list[float]:
 def get_conn():
     return psycopg2.connect(os.environ["DIRECT_URL"])
 
-def upsert_jd(conn, job: dict) -> str:
+import hashlib
+
+def content_hash(job: dict) -> str:
+    text = f"{job.get('title','')}{job.get('salaryRange','')}{job.get('description','')}"
+    return hashlib.md5(text.encode()).hexdigest()
+
+def retry(fn, retries=2, delay=3):
+    for attempt in range(retries + 1):
+        try:
+            return fn()
+        except Exception as e:
+            if attempt == retries:
+                raise
+            print(f"  ⚠️ 重試 ({attempt+1}/{retries}): {str(e)[:60]}")
+            sleep(delay * (attempt + 1))
+
+def upsert_jd(conn, job: dict) -> tuple[str, bool]:
+    """Returns (jd_id, content_changed)."""
+    h = content_hash(job)
     with conn.cursor() as cur:
+        cur.execute('SELECT id, "contentHash" FROM "Jd" WHERE "externalUrl" = %s', (job["externalUrl"],))
+        existing = cur.fetchone()
+        changed = existing is None or existing[1] != h
+
         cur.execute("""
             INSERT INTO "Jd" (
                 id, "externalUrl", title, "companyName", skills, "salaryRange",
                 seniority, remote, location, description, "recruitmentActivity",
-                "replyDays", "contactTime", "postedAt", "applicantCount", "crawledAt", source
+                "replyDays", "contactTime", "postedAt", "applicantCount", "crawledAt", source,
+                "contentHash", "contentUpdatedAt", "delistedAt"
             ) VALUES (
                 gen_random_uuid()::text, %(externalUrl)s, %(title)s, %(companyName)s,
                 %(skills)s::jsonb, %(salaryRange)s, %(seniority)s, %(remote)s,
                 %(location)s, %(description)s, %(recruitmentActivity)s, %(replyDays)s,
-                %(contactTime)s, %(postedAt)s, %(applicantCount)s, NOW(), '104'
+                %(contactTime)s, %(postedAt)s, %(applicantCount)s, NOW(), '104',
+                %(contentHash)s, CASE WHEN TRUE THEN NOW() END, NULL
             )
             ON CONFLICT ("externalUrl") DO UPDATE SET
                 title                 = EXCLUDED.title,
@@ -252,21 +276,26 @@ def upsert_jd(conn, job: dict) -> str:
                 "contactTime"         = EXCLUDED."contactTime",
                 "postedAt"            = EXCLUDED."postedAt",
                 "applicantCount"      = EXCLUDED."applicantCount",
-                "crawledAt"           = NOW()
+                "crawledAt"           = NOW(),
+                "contentHash"         = EXCLUDED."contentHash",
+                "contentUpdatedAt"    = CASE WHEN "Jd"."contentHash" IS DISTINCT FROM EXCLUDED."contentHash" THEN NOW() ELSE "Jd"."contentUpdatedAt" END,
+                "delistedAt"          = NULL
             RETURNING id
-        """, {**job, "skills": json.dumps(job.get("skills") or [], ensure_ascii=False)})
+        """, {**job, "skills": json.dumps(job.get("skills") or [], ensure_ascii=False), "contentHash": h})
         row = cur.fetchone()
         conn.commit()
-        return row[0]
+        return row[0], changed
 
 def upsert_embedding(conn, jd_id: str, vector: list[float]):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO "JdEmbedding" ("jdId", embedding)
-            VALUES (%s, %s::vector(768))
-            ON CONFLICT ("jdId") DO UPDATE SET embedding = EXCLUDED.embedding
-        """, (jd_id, f"[{','.join(str(x) for x in vector)}]"))
-        conn.commit()
+    def _do():
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO "JdEmbedding" ("jdId", embedding)
+                VALUES (%s, %s::vector(768))
+                ON CONFLICT ("jdId") DO UPDATE SET embedding = EXCLUDED.embedding
+            """, (jd_id, f"[{','.join(str(x) for x in vector)}]"))
+            conn.commit()
+    retry(_do)
 
 def get_keywords(conn) -> list[str]:
     with conn.cursor() as cur:
@@ -280,12 +309,47 @@ def get_keywords(conn) -> list[str]:
 
 def get_existing_urls(conn) -> set[str]:
     with conn.cursor() as cur:
-        cur.execute('SELECT "externalUrl" FROM "Jd"')
+        cur.execute('SELECT "externalUrl" FROM "Jd" WHERE "delistedAt" IS NULL')
         return {row[0] for row in cur.fetchall()}
+
+def check_delisted(conn, seen_urls: set[str]) -> int:
+    """Mark jobs not seen in this crawl and older than 3 days as delisted."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            UPDATE "Jd"
+            SET "delistedAt" = NOW()
+            WHERE "delistedAt" IS NULL
+              AND "crawledAt" < NOW() - INTERVAL '3 days'
+              AND "externalUrl" NOT IN (SELECT unnest(%s::text[]))
+            RETURNING id
+        """, (list(seen_urls),))
+        count = cur.rowcount
+        conn.commit()
+        return count
+
+def send_health_report(conn, stats: dict):
+    """Log crawl health stats to a simple table or print summary."""
+    print(f"\n{'='*50}")
+    print(f"📊 爬蟲健康報告")
+    print(f"{'='*50}")
+    print(f"  關鍵字數：{stats['keywords']}")
+    print(f"  搜尋到職缺：{stats['found']}")
+    print(f"  新職缺：{stats['new']}")
+    print(f"  已存在（更新）：{stats['existing_refreshed']}")
+    print(f"  儲存成功：{stats['saved']}")
+    print(f"  儲存失敗：{stats['failed']}")
+    print(f"  內容有變動：{stats['content_changed']}")
+    print(f"  標記下架：{stats['delisted']}")
+    print(f"  Embedding 成功：{stats['embedded']}")
+    print(f"  耗時：{stats['duration_sec']:.0f} 秒")
+    if stats['failed'] > stats['saved'] * 0.3:
+        print(f"  ⚠️ 警告：失敗率超過 30%！")
+    print(f"{'='*50}")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    start_time = time.time()
     print("🚀 JobPilot 104 Crawler (Python + curl_cffi)\n")
     conn = get_conn()
 
@@ -296,7 +360,8 @@ def main():
         conn.close()
         return
 
-    print("\n── 搜尋職缺清單 ──")
+    # ── Phase 1: 搜尋職缺清單 ──
+    print("\n── Phase 1: 搜尋職缺清單 ──")
     cutoff = (datetime.now() - timedelta(days=3)).replace(hour=0, minute=0, second=0, microsecond=0)
 
     seen: dict[str, float] = {}
@@ -311,40 +376,88 @@ def main():
 
     existing = get_existing_urls(conn)
     new_pairs = [(u, s) for u, s in seen.items() if u not in existing]
-    print(f"新職缺 {len(new_pairs)} 個（跳過已存 {len(seen) - len(new_pairs)} 個）\n")
+    existing_pairs = [(u, s) for u, s in seen.items() if u in existing]
+    print(f"新職缺 {len(new_pairs)} 個，已存在 {len(existing_pairs)} 個")
 
-    if not new_pairs:
-        print("沒有新職缺，結束")
-        conn.close()
-        return
-
-    print("── 抓取職缺詳情 ──")
-    saved = failed = 0
+    # ── Phase 2: 抓取新職缺詳情 ──
+    print("\n── Phase 2: 抓取新職缺詳情 ──")
+    saved = failed = content_changed = embedded = 0
+    existing_refreshed = 0
 
     for i, (job_url, hr_score) in enumerate(new_pairs):
         slug = job_url.split("/job/")[-1]
-        print(f"[{i+1}/{len(new_pairs)}] {slug} ... ", end="", flush=True)
+        print(f"[新 {i+1}/{len(new_pairs)}] {slug} ... ", end="", flush=True)
         job = fetch_job_detail(job_url, hr_score)
         if not job:
             print("❌ API 失敗")
             failed += 1
             continue
         try:
-            jd_id = upsert_jd(conn, job)
-            vector = embed_jd(job)
+            def _save():
+                return upsert_jd(conn, job)
+            jd_id, changed = retry(_save)
+            if changed:
+                content_changed += 1
+            vector = retry(lambda: embed_jd(job))
             if len(vector) == 768:
                 upsert_embedding(conn, jd_id, vector)
+                embedded += 1
             saved += 1
             print(f"✅ {job['title']} @ {job['companyName']}")
         except Exception as e:
-            print(f"❌ DB 錯誤: {str(e)[:80]}")
+            print(f"❌ 錯誤: {str(e)[:80]}")
             failed += 1
         human_delay()
 
+    # ── Phase 3: 更新已存在的職缺（偵測內容變動）──
+    if existing_pairs:
+        print(f"\n── Phase 3: 更新已存在的 {len(existing_pairs)} 個職缺 ──")
+        for i, (job_url, hr_score) in enumerate(existing_pairs):
+            slug = job_url.split("/job/")[-1]
+            print(f"[更新 {i+1}/{len(existing_pairs)}] {slug} ... ", end="", flush=True)
+            job = fetch_job_detail(job_url, hr_score)
+            if not job:
+                print("⏭ 跳過")
+                continue
+            try:
+                jd_id, changed = retry(lambda: upsert_jd(conn, job))
+                existing_refreshed += 1
+                if changed:
+                    content_changed += 1
+                    vector = retry(lambda: embed_jd(job))
+                    if len(vector) == 768:
+                        upsert_embedding(conn, jd_id, vector)
+                        embedded += 1
+                    print(f"🔄 內容變動！{job['title']}")
+                else:
+                    print(f"✓ 無變動")
+            except Exception as e:
+                print(f"❌ {str(e)[:60]}")
+            human_delay()
+
+    # ── Phase 4: 下架偵測 ──
+    print("\n── Phase 4: 下架偵測 ──")
+    all_seen_urls = set(seen.keys())
+    delisted = check_delisted(conn, all_seen_urls)
+    print(f"  標記下架：{delisted} 筆")
+
+    # ── Phase 5: 健康報告 ──
+    duration = time.time() - start_time
+    stats = {
+        "keywords": len(keywords),
+        "found": len(seen),
+        "new": len(new_pairs),
+        "existing_refreshed": existing_refreshed,
+        "saved": saved,
+        "failed": failed,
+        "content_changed": content_changed,
+        "delisted": delisted,
+        "embedded": embedded,
+        "duration_sec": duration,
+    }
+    send_health_report(conn, stats)
+
     conn.close()
-    print(f"\n── 完成 ──")
-    print(f"✅ 儲存: {saved} 個")
-    print(f"❌ 失敗: {failed} 個")
 
 if __name__ == "__main__":
     main()
