@@ -143,5 +143,6 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
         : 0.7 * intentScore + 0.3 * kScore;
       return { jdId, resumeScore, intentScore, keywordScore: kScore, finalScore };
     })
-    .sort((a, b) => b.finalScore - a.finalScore);
+    .sort((a, b) => b.finalScore - a.finalScore)
+    .slice(0, topN);
 }

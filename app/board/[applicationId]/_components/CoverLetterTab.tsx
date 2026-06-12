@@ -3,14 +3,6 @@
 import { useState } from "react";
 import ResumeUrlInput from "./ResumeUrlInput";
 
-type Tone = "formal" | "casual" | "concise";
-
-const TONES: { value: Tone; label: string }[] = [
-  { value: "formal", label: "正式" },
-  { value: "casual", label: "活潑" },
-  { value: "concise", label: "簡潔" },
-];
-
 export default function CoverLetterTab({
   applicationId,
   initialResumeUrl,
@@ -18,7 +10,6 @@ export default function CoverLetterTab({
   applicationId: string;
   initialResumeUrl: string | null;
 }) {
-  const [tone, setTone] = useState<Tone>("formal");
   const [coverLetter, setCoverLetter] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,7 +22,7 @@ export default function CoverLetterTab({
       const resp = await fetch("/api/cover-letter/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId, tone }),
+        body: JSON.stringify({ applicationId, tone: "formal" }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({}));
@@ -66,32 +57,6 @@ export default function CoverLetterTab({
       <div style={{ marginBottom: 20 }}>
         <p style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1a", marginBottom: 4 }}>AI 推薦信生成</p>
         <p style={{ fontSize: 12, color: "#999", marginTop: 2 }}>根據你的履歷和職缺描述，自動生成推薦信草稿</p>
-      </div>
-
-      {/* Tone selector */}
-      <div style={{ marginBottom: 16 }}>
-        <p style={{ fontSize: 11, color: "#aaa", letterSpacing: "0.05em", marginBottom: 8 }}>語氣風格</p>
-        <div style={{ display: "flex", gap: 8 }}>
-          {TONES.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => setTone(t.value)}
-              style={{
-                padding: "6px 16px",
-                borderRadius: 20,
-                fontSize: 13,
-                fontWeight: 500,
-                border: tone === t.value ? "1.5px solid #111" : "1px solid rgba(0,0,0,0.1)",
-                background: tone === t.value ? "#111" : "#fff",
-                color: tone === t.value ? "#fff" : "#666",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Generate button */}

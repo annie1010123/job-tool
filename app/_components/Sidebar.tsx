@@ -18,10 +18,11 @@ const NAV = [
   },
   {
     href: "/saved",
-    label: "收藏區",
+    label: "找工作",
     icon: (
       <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        <circle cx="11" cy="11" r="7" />
+        <path d="M21 21l-4.35-4.35" />
       </svg>
     ),
   },
@@ -109,29 +110,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom: intent shortcut */}
-      <div style={{ padding: "12px 10px 20px" }}>
-        <Link
-          href="/onboarding/intent"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "9px 12px",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontSize: 12,
-            color: "#aaa8a0",
-            transition: "color 0.15s",
-          }}
-        >
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-          </svg>
-          求職意圖設定
-        </Link>
-      </div>
+      <div style={{ padding: "12px 10px 20px" }} />
     </aside>
   );
 }

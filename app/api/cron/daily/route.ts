@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
   for (const user of users) {
     try {
-      const matches = await matchForUser(user.id, 20);
+      const matches = await matchForUser(user.id, 30);
       if (matches.length === 0) continue;
 
       // Boost

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobPilot PRD v4.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Noto Sans TC", system-ui, sans-serif; background: #F5F0E8; color: #1a1a2e; line-height: 1.8; }
+
+.hero { background: #1a1a2e; color: white; padding: 48px 24px; text-align: center; }
+.hero h1 { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+.hero .subtitle { font-size: 14px; color: #94a3b8; margin-bottom: 20px; }
+.hero .meta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; font-size: 12px; color: #64748b; }
+.hero .meta span { background: rgba(255,255,255,0.06); padding: 3px 12px; border-radius: 16px; }
+
+nav.toc { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #e2e8f0; padding: 10px 24px; overflow-x: auto; white-space: nowrap; }
+nav.toc a { display: inline-block; font-size: 12px; color: #64748b; text-decoration: none; padding: 4px 10px; border-radius: 6px; margin-right: 2px; }
+nav.toc a:hover { background: #f1f5f9; color: #1a1a2e; }
+
+.container { max-width: 900px; margin: 0 auto; padding: 28px 16px; }
+.card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 32px; margin-bottom: 24px; page-break-inside: avoid; }
+.card h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; border-bottom: 2px solid #e8e4dc; padding-bottom: 10px; margin-bottom: 20px; }
+.card h3 { font-size: 15px; font-weight: 600; color: #1e3a5f; margin-top: 22px; margin-bottom: 10px; }
+.card h4 { font-size: 13px; font-weight: 600; color: #475569; margin-top: 14px; margin-bottom: 6px; }
+p { font-size: 14px; margin-bottom: 10px; }
+ul, ol { padding-left: 20px; margin: 8px 0; }
+li { margin-bottom: 4px; font-size: 14px; }
+blockquote { border-left: 3px solid #1a1a2e; padding: 10px 18px; margin: 12px 0; color: #475569; background: #faf9f6; border-radius: 0 8px 8px 0; font-size: 14px; }
+code { font-family: "SF Mono", Menlo, monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+th { background: #1a1a2e; color: white; text-align: left; padding: 8px 12px; font-weight: 500; }
+td { padding: 8px 12px; border: 1px solid #e2e8f0; vertical-align: top; }
+tr:nth-child(even) td { background: #faf9f6; }
+
+.tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 12px; margin-right: 4px; font-weight: 500; }
+.tag-mvp { background: #eff6ff; color: #2563eb; }
+.tag-v2 { background: #fef3c7; color: #92400e; }
+.tag-p0 { background: #fef2f2; color: #dc2626; }
+.tag-p1 { background: #fffbeb; color: #d97706; }
+.tag-p2 { background: #f1f5f9; color: #64748b; }
+
+.sn { display: inline-flex; align-items: center; justify-content: center; background: #1a1a2e; color: white; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; font-weight: 600; margin-right: 8px; }
+
+.story { border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin: 16px 0; background: #faf9f6; }
+.story-title { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+.story-label { font-size: 12px; font-weight: 600; color: #1e3a5f; margin-top: 10px; margin-bottom: 4px; }
+.story-content { font-size: 13px; color: #475569; }
+.story-ac { background: white; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-top: 8px; }
+.story-ac li { font-size: 13px; margin-bottom: 3px; }
+
+.mermaid { margin: 16px 0; text-align: center; }
+.page-break { page-break-before: always; }
+
+.api-method { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+.api-get { background: #ecfdf5; color: #059669; }
+.api-post { background: #eff6ff; color: #2563eb; }
+.api-delete { background: #fef2f2; color: #dc2626; }
+
+.journey-table { overflow-x: auto; }
+.journey-table table { min-width: 750px; }
+.journey-table td { font-size: 12px; }
+
+/* Wireframe */
+.wireframe { border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 16px 0; background: #f0f0f0; }
+.wireframe-title { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>JobPilot PRD</h1>
+  <div class="subtitle">Product Requirements Document</div>
+  <div class="meta">
+    <span>v4.0</span>
+    <span>2026-06-12</span>
+    <span>PM: Charles</span>
+    <span>Status: Pre-Development</span>
+  </div>
+</div>
+
+<nav class="toc">
+  <a href="#s1">一、專案概述</a>
+  <a href="#s2">二、功能調研</a>
+  <a href="#s3">三、專案需求</a>
+  <a href="#s4">四、技術架構</a>
+  <a href="#s5">五、時程規劃</a>
+  <a href="#s6">六、參考資料</a>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!--  一、專案概述                                                   -->
+<!-- ============================================================ -->
+<div class="card" id="s1">
+  <h2><span class="sn">1</span>一、專案概述</h2>
+
+  <!-- 1. 專案背景 -->
+  <h3>1. 專案背景</h3>
+  <p>台灣的求職者日常：打開 104 搜一輪、切到 LinkedIn 搜一輪、再去 CakeResume 看看，把有興趣的職缺複製到 Notion。每投一間公司就要重新寫推薦信、重新準備面試題目。投了 15 間、面了 8 間，但第 9 間的準備品質跟第 1 間一模一樣。</p>
+  <p>問題不是缺工具，而是工具之間不連通。求職的每個環節（搜尋、篩選、投遞、準備、面試、復盤）都有各自的解法，但沒有任何產品把它們串起來，讓每次面試的經驗累積下來。</p>
+
+  <h4>目標 Persona</h4>
+  <blockquote>正在找實習或第一份工作的大學生/研究生，同時投遞 5 間以上公司，使用 104 + LinkedIn + CakeResume。痛點是每間公司都要從零準備、面試經驗沒有累積。</blockquote>
+
+  <h4>核心 JTBD</h4>
+  <blockquote>當我正在積極求職、每天要在多個平台切換時，我想要一個記得我所有資料、會從每次面試中學習的 AI 助手，這樣我就能把時間花在真正重要的面試準備上。</blockquote>
+
+  <!-- 2. 專案目標 -->
+  <h3>2. 專案目標</h3>
+  <p>打造一個 AI 求職教練，核心差異化在於：<strong>面試經驗的累積，每一次面試的復盤都讓下一次的 AI 準備更精準。</strong></p>
+  <p>分兩階段交付：</p>
+  <ul>
+    <li><strong>MVP</strong> — 驗證「AI 語意推薦有沒有用」「每日推薦能不能帶來回訪」「自動追蹤比手動好用嗎」</li>
+    <li><strong>V2</strong> — MVP 驗證通過後，加入推薦信生成、AI 面試準備、面試復盤 + 題庫進化</li>
+  </ul>
+
+  <!-- 3. 主要功能 -->
+  <h3>3. 主要功能</h3>
+  <table>
+    <tr><th>ID</th><th>功能</th><th>Phase</th><th>優先級</th><th>說明</th></tr>
+    <tr><td>F0</td><td>Landing Page + 試玩</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>不需登入，輸入求職方向即時體驗 AI 職缺推薦</td></tr>
+    <tr><td>F1</td><td>Magic Link 登入</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>NextAuth Email Magic Link + Google OAuth</td></tr>
+    <tr><td>F2</td><td>Onboarding</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>求職關鍵字設定 + LLM 關鍵字擴展</td></tr>
+    <tr><td>F3</td><td>爬蟲 + 推薦 + Email</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>104 爬蟲 + Embedding 語意匹配 + 每日 Email</td></tr>
+    <tr><td>F4</td><td>Dashboard</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p2">P2</span></td><td>問候語 + 漏斗 + 待處理 + 動態</td></tr>
+    <tr><td>F5</td><td>找工作頁</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>AI 推薦 tab + 我的收藏 tab + 搜尋篩選</td></tr>
+    <tr><td>F6</td><td>求職追蹤</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>清單 + Kanban + 漏斗轉換率 + 久沒回音警示</td></tr>
+    <tr><td>F7</td><td>推薦信 AI 生成</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p1">P1</span></td><td>根據履歷 + JD 自動生成，可編輯 + 複製</td></tr>
+    <tr><td>F8</td><td>個人檔案</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p2">P2</span></td><td>基本資訊 + 工作經歷 + 專案經歷 + 技能</td></tr>
+    <tr><td>F9</td><td>AI 面試準備</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p1">P1</span></td><td>根據 JD + 履歷 + 歷史題庫出題</td></tr>
+    <tr><td>F10</td><td>面試錄音 + AI 復盤</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p2">P2</span></td><td>Whisper 轉文字 + AI 萃取 Q&A + 品質評估</td></tr>
+    <tr><td>F11</td><td>手動面試記錄</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p1">P1</span></td><td>快速填寫 Q&A + 自評，低門檻 fallback</td></tr>
+    <tr><td>F12</td><td>題庫自動進化</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p2">P2</span></td><td>復盤 Q&A 自動回饋到 AI 出題權重</td></tr>
+  </table>
+
+  <h4>優先級定義</h4>
+  <table>
+    <tr><th>優先級</th><th>定義</th><th>判斷標準</th></tr>
+    <tr><td><span class="tag tag-p0">P0</span></td><td>沒有就不能用</td><td>拿掉這個功能，產品的核心路徑會斷掉</td></tr>
+    <tr><td><span class="tag tag-p1">P1</span></td><td>核心體驗大幅提升</td><td>有了之後用戶體驗有質的飛躍，但沒有也能完成基本任務</td></tr>
+    <tr><td><span class="tag tag-p2">P2</span></td><td>有了更好</td><td>提升便利性或資訊密度，但不影響核心功能</td></tr>
+  </table>
+
+  <!-- 4. 專案時程 -->
+  <h3>4. 專案時程</h3>
+  <table>
+    <tr><th>項目</th><th>日期</th><th>備註</th></tr>
+    <tr><td>MVP 開發</td><td>W1 - W4</td><td>Landing + 登入 + Onboarding + 爬蟲推薦 + 找工作 + 追蹤</td></tr>
+    <tr><td>MVP 驗證期</td><td>W5 - W6</td><td>觀察 H1-H3 假設，收集數據</td></tr>
+    <tr><td>V2 開發</td><td>W7 - W13</td><td>推薦信 + 面試準備 + 復盤 + 題庫進化</td></tr>
+    <tr><td>UI 優化 + 上線</td><td>W14</td><td>公網可訪問</td></tr>
+  </table>
+
+  <!-- 5. 預期成效 -->
+  <h3>5. 預期成效</h3>
+
+  <h4>North Star Metric</h4>
+  <blockquote>
+    <strong>每週 AI 面試準備使用次數</strong><br>
+    反映核心差異化（AI 從面試經驗中進化），具有累積效應。MVP 階段先用「推薦職缺收藏率」作為先行指標。
+  </blockquote>
+
+  <table>
+    <tr><th>指標</th><th>定義</th><th>目標值</th></tr>
+    <tr><td>AI 面試準備使用率</td><td>有投遞紀錄的用戶中，使用過 AI 面試準備的比例</td><td>&ge; 40%</td></tr>
+    <tr><td>面試復盤完成率</td><td>面試後 48 小時內完成復盤的比例</td><td>&ge; 30%</td></tr>
+    <tr><td>D14 留存率</td><td>註冊 14 天後仍活躍的用戶比例</td><td>&ge; 20%</td></tr>
+    <tr><td>護欄：LLM 月成本/用戶</td><td>超過就不可持續</td><td>&le; $2</td></tr>
+  </table>
+
+  <h4>三層 Aha Moment</h4>
+  <table>
+    <tr><th>層級</th><th>觸發條件</th><th>Aha 體驗</th><th>時間</th></tr>
+    <tr><td>Landing（訪客）</td><td>輸入求職方向</td><td>30 秒內看到 5 個高度匹配的職缺</td><td>T + 30s</td></tr>
+    <tr><td>Quick（新用戶）</td><td>完成 Onboarding</td><td>看到 AI 推薦跟我想找的方向吻合</td><td>T + 5min</td></tr>
+    <tr><td>Primary（活躍）</td><td>完成第一次復盤</td><td>下次面試準備出現「根據你上次經驗延伸」的題目</td><td>T + 1~2wk</td></tr>
+  </table>
+
+  <h4>核心假設</h4>
+  <table>
+    <tr><th>ID</th><th>假設</th><th>驗證方法</th><th>成功標準</th><th>時機</th></tr>
+    <tr><td>H1</td><td>語意推薦比關鍵字搜尋更精準</td><td>推薦職缺收藏率</td><td>&ge; 40%</td><td>MVP W5-6</td></tr>
+    <tr><td>H2</td><td>每日 Email 帶來持續回訪</td><td>Email 點擊率</td><td>&ge; 15%</td><td>MVP W5-6</td></tr>
+    <tr><td>H3</td><td>自動追蹤比 Notion 好用</td><td>用戶訪談</td><td>4/5 回答「比之前好」</td><td>MVP W5-6</td></tr>
+    <tr><td>H4</td><td>AI 推薦信品質夠好</td><td>修改幅度追蹤</td><td>&le; 30% 大幅修改</td><td>V2 上線 2 週</td></tr>
+    <tr><td>H5</td><td>用戶願意做面試復盤</td><td>復盤上傳率</td><td>&ge; 30%</td><td>V2 上線 2 週</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!--  二、功能調研                                                   -->
+<!-- ============================================================ -->
+<div class="card" id="s2">
+  <h2><span class="sn">2</span>二、功能調研</h2>
+
+  <h3>1. 產品現狀調研</h3>
+  <p>目前市場上求職者常用的工具與不足：</p>
+  <table>
+    <tr><th>工具</th><th>做得好的</th><th>缺什麼</th></tr>
+    <tr><td>104 人力銀行</td><td>職缺量最大、台灣首選</td><td>搜尋靠關鍵字、沒有語意理解、推薦信要自己寫</td></tr>
+    <tr><td>LinkedIn</td><td>海外職缺、人脈網絡</td><td>台灣職缺不完整、推薦偏社交互動</td></tr>
+    <tr><td>CakeResume</td><td>履歷設計、新創職缺多</td><td>沒有面試準備功能、追蹤靠外部工具</td></tr>
+    <tr><td>Notion / Excel</td><td>彈性高、可自訂</td><td>純手動、沒有 AI、投遞狀態靠自己記</td></tr>
+    <tr><td>ChatGPT</td><td>可以問面試題、寫推薦信</td><td>沒有記憶、每次從零開始、不知道你投了哪些公司</td></tr>
+  </table>
+
+  <h3>2. 競品分析調研</h3>
+  <table>
+    <tr><th>競品</th><th>核心價值</th><th>JobPilot 差異</th></tr>
+    <tr><td>Jobbo</td><td>多平台整合 + 滑卡篩選 + Cover Letter 生成</td><td>Jobbo 專注「找→篩→投」的前半段；JobPilot 多了面試準備 + 復盤 + AI 進化的完整後半段</td></tr>
+    <tr><td>104 + LinkedIn + Cake</td><td>職缺資訊來源</td><td>JobPilot 整合多平台 + AI 語意匹配，不取代它們而是串起來</td></tr>
+    <tr><td>ChatGPT</td><td>通用問答</td><td>結構化題庫 + 歷史經驗累積，不是每次從零開始</td></tr>
+  </table>
+
+  <h3>Not Doing List</h3>
+  <table>
+    <tr><th>不做</th><th>理由</th></tr>
+    <tr><td>自動投遞（幫用戶送出履歷）</td><td>法律風險 + 用戶需要控制權</td></tr>
+    <tr><td>面試中即時 AI 提示</td><td>道德問題 + 技術不可行</td></tr>
+    <tr><td>薪資談判建議</td><td>缺乏可靠薪資數據</td></tr>
+    <tr><td>社群功能 / 付費訂閱 / 手機 App</td><td>不在 scope 內</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!--  三、專案需求                                                   -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<div class="card" id="s3">
+  <h2><span class="sn">3</span>三、專案需求</h2>
+
+  <!-- 1. 關鍵流程 -->
+  <h3>1. 關鍵流程</h3>
+  <div class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ffffff','primaryBorderColor':'#1a1a2e','primaryTextColor':'#1a1a2e','lineColor':'#64748b','fontSize':'13px','edgeLabelBackground':'#ffffff'}}}%%
+flowchart LR
+    A(訪客進入\nLanding Page) --> B{已登入?}
+    B -- 否 --> C(試玩職缺推薦)
+    C --> D(註冊/登入)
+    D --> F(Onboarding:\n設定求職關鍵字)
+    B -- 是 --> E
+    F --> E(Dashboard)
+
+    E --> G(找工作頁\nAI 推薦清單)
+    G --> H{感興趣?}
+    H -- 是 --> I(收藏職缺)
+    H -- 否 --> G
+
+    I --> J(我的收藏)
+    J --> K{決定投遞?}
+    K -- 是 --> L(建立 Application)
+    L --> M(求職追蹤\nKanban)
+
+    M --> N{面試通知?}
+    N -- 是 --> O(AI 面試準備)
+    O --> P(實際面試)
+
+    P --> Q{復盤方式}
+    Q -- 錄音 --> R(Whisper\n轉文字)
+    Q -- 手動 --> S(手動記錄\nQ&A)
+    R --> T(AI 分析\n題庫更新)
+    S --> T
+    T -.->|下次更精準| O
+  </div>
+
+  <!-- User Journey Map -->
+  <h4>User Journey Map</h4>
+  <div class="journey-table">
+  <table>
+    <tr>
+      <th style="width:9%">階段</th>
+      <th>發現</th><th>註冊上手</th><th>探索推薦</th><th>收藏篩選</th><th>投遞準備</th><th>面試</th><th>復盤進化</th><th>結果</th>
+    </tr>
+    <tr>
+      <td><strong>行為</strong></td>
+      <td>看到 JobPilot，點進 Landing Page</td>
+      <td>試玩職缺推薦 &rarr; 註冊 &rarr; 設定求職關鍵字</td>
+      <td>打開 Dashboard 看 AI 推薦</td>
+      <td>收藏感興趣的職缺</td>
+      <td>決定投遞 &rarr; 生成推薦信 &rarr; AI 面試準備</td>
+      <td>帶著準備好的題目去面試</td>
+      <td>上傳錄音或手動記錄 &rarr; AI 分析 &rarr; 題庫更新</td>
+      <td>收到 Offer 或調整策略</td>
+    </tr>
+    <tr>
+      <td><strong>接觸點</strong></td>
+      <td>Landing Page + 30 秒試玩</td>
+      <td>Email Magic Link + 設定關鍵字</td>
+      <td>Dashboard + 每日 Email</td>
+      <td>找工作頁</td>
+      <td>投遞追蹤 + 推薦信 tab + 面試準備 tab</td>
+      <td>（離開產品）</td>
+      <td>面試復盤 tab</td>
+      <td>Kanban 更新狀態</td>
+    </tr>
+    <tr>
+      <td><strong>痛點</strong></td>
+      <td>不確定又是不是空殼產品</td>
+      <td>設定如果太複雜會放棄</td>
+      <td>推薦太多不知道從哪看起</td>
+      <td>不確定相符度可不可信</td>
+      <td>推薦信如果太模板化就沒用</td>
+      <td>實際問題可能沒在準備範圍</td>
+      <td>面試完太累不想記錄</td>
+      <td>被拒絕時沒有改善方向</td>
+    </tr>
+    <tr>
+      <td colspan="9" style="padding:0;position:relative;height:80px">
+        <svg viewBox="0 0 800 80" preserveAspectRatio="none" style="width:100%;height:80px;display:block">
+          <line x1="0" y1="40" x2="800" y2="40" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+          <polyline points="50,50 150,25 250,15 350,40 450,18 550,45 650,65 750,12" fill="none" stroke="#1a1a2e" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="50" cy="50" r="4" fill="#d97706"/><text x="50" y="72" text-anchor="middle" font-size="9" fill="#d97706" font-weight="600">觀望</text>
+          <circle cx="150" cy="25" r="4" fill="#059669"/><text x="150" y="72" text-anchor="middle" font-size="9" fill="#059669" font-weight="600">期待</text>
+          <circle cx="250" cy="15" r="4" fill="#059669"/><text x="250" y="72" text-anchor="middle" font-size="9" fill="#059669" font-weight="600">滿意</text>
+          <circle cx="350" cy="40" r="4" fill="#d97706"/><text x="350" y="72" text-anchor="middle" font-size="9" fill="#d97706" font-weight="600">中性</text>
+          <circle cx="450" cy="18" r="4" fill="#059669"/><text x="450" y="72" text-anchor="middle" font-size="9" fill="#059669" font-weight="600">有信心</text>
+          <circle cx="550" cy="45" r="4" fill="#d97706"/><text x="550" y="72" text-anchor="middle" font-size="9" fill="#d97706" font-weight="600">緊張</text>
+          <circle cx="650" cy="65" r="4" fill="#dc2626"/><text x="650" y="72" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="600">疲憊</text>
+          <circle cx="750" cy="12" r="4" fill="#059669"/><text x="750" y="72" text-anchor="middle" font-size="9" fill="#059669" font-weight="600">有成長感</text>
+        </svg>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>機會點</strong></td>
+      <td>30 秒試玩降低門檻</td>
+      <td>只設定關鍵字，不需上傳履歷</td>
+      <td>限制推薦數量 + 標注 Top 匹配</td>
+      <td>顯示「為什麼推薦」理由</td>
+      <td>推薦信帶入具體經歷</td>
+      <td>整理成可帶著看的筆記</td>
+      <td>手動記錄 1 分鐘降低門檻</td>
+      <td>根據累積數據給求職建議</td>
+    </tr>
+  </table>
+  </div>
+
+  <!-- 2. 關鍵資料流 -->
+  <h3>2. 關鍵資料流</h3>
+  <div class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#ffffff','primaryBorderColor':'#1a1a2e','lineColor':'#64748b','fontSize':'12px'}}}%%
+erDiagram
+    User ||--o| JobIntent : has
+    User ||--o| Resume : "has (V2)"
+    User ||--o{ Recommendation : receives
+    User ||--o{ SavedJob : bookmarks
+    User ||--o{ Application : tracks
+    User ||--o{ QuestionBank : "accumulates (V2)"
+    Jd ||--o{ Recommendation : matched_to
+    Jd ||--o{ SavedJob : saved_as
+    Application ||--o{ InterviewReview : "has_reviews (V2)"
+    Recommendation ||--o{ EmailLog : sent_via
+
+    User { string id PK; string email UK }
+    JobIntent { string id PK; string rawInput; json expandedKeywords }
+    Resume { string id PK; string storageUrl; json skills }
+    Jd { string id PK; string externalUrl UK; string title; string companyName }
+    Recommendation { string id PK; float finalScore; datetime dailyBatch }
+    SavedJob { string id PK; string platform; string status }
+    Application { string id PK; string status; datetime appliedAt }
+    InterviewReview { string id PK; json extractedQA; text overallFeedback }
+    QuestionBank { string id PK; string question; string userPerformance; int frequency }
+    EmailLog { string id PK; string trackingToken UK; datetime clickedAt }
+  </div>
+
+  <h4>MVP vs V2 Model</h4>
+  <table>
+    <tr><th>Model</th><th>Phase</th><th>用途</th></tr>
+    <tr><td>User, JobIntent</td><td><span class="tag tag-mvp">MVP</span></td><td>用戶身份 + 求職關鍵字</td></tr>
+    <tr><td>Jd, Recommendation, EmailLog</td><td><span class="tag tag-mvp">MVP</span></td><td>職缺數據 + 推薦結果 + Email 追蹤</td></tr>
+    <tr><td>SavedJob, Application</td><td><span class="tag tag-mvp">MVP</span></td><td>收藏 + 投遞追蹤</td></tr>
+    <tr><td>Resume</td><td><span class="tag tag-v2">V2</span></td><td>履歷上傳（推薦信前置條件）</td></tr>
+    <tr><td>InterviewReview, QuestionBank</td><td><span class="tag tag-v2">V2</span></td><td>面試復盤 + 題庫進化</td></tr>
+  </table>
+
+  <!-- 3. 需求說明 -->
+  <h3>3. 需求說明</h3>
+  <p>以下按 User Story 格式撰寫各功能規格。</p>
+
+  <!-- Story 1: Landing Page -->
+  <div class="story">
+    <div class="story-title">Story 1: Landing Page + 30 秒試玩 <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">讓訪客不需要註冊就能體驗 AI 職缺推薦，降低轉換門檻</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/</code>（首頁，Public）</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li><strong>頁面結構：</strong>Hero（左文右圖）&rarr; 痛點區 &rarr; 三步驟解法 &rarr; 30 秒試玩區 &rarr; Final CTA &rarr; Footer</li>
+        <li><strong>試玩區：</strong>訪客在 input 輸入求職方向（如「PM 實習 台北」），後端將輸入轉 embedding，對已爬取的 JD 做 pgvector similarity search，回傳 Top 5 最匹配職缺（職稱 + 公司名 + 相符度 %）</li>
+        <li><strong>限制：</strong>Rate limit 5 次/小時/IP</li>
+        <li><strong>CTA：</strong>「想收藏這些職缺？免費註冊」</li>
+      </ul>
+    </div>
+    <div class="story-label">設計</div>
+    <div class="story-content">[ Wireframe / Figma 連結 ]</div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>操作面：訪客輸入關鍵字後 3 秒內顯示推薦結果</li>
+        <li>輸出面：回傳 5 筆職缺，每筆含職稱、公司名、相符度百分比</li>
+        <li>限制面：同一 IP 第 6 次請求回傳 429 錯誤</li>
+        <li>轉換面：試玩區下方 CTA 可點擊跳轉到註冊頁</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 2: 登入 -->
+  <div class="story">
+    <div class="story-title">Story 2: Magic Link 登入 <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">讓用戶不需要設密碼就能登入</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/auth/signin</code></div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li>支援 Email Magic Link（NextAuth v5）+ Google OAuth</li>
+        <li>首次登入自動建立 User record</li>
+        <li>登入後導向 Onboarding（首次）或 Dashboard（已完成 Onboarding）</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>輸入 Email 後 30 秒內收到 Magic Link</li>
+        <li>點擊 Magic Link 後自動登入並導向正確頁面</li>
+        <li>Google OAuth 一鍵登入可用</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 3: Onboarding -->
+  <div class="story">
+    <div class="story-title">Story 3: Onboarding <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">讓系統知道用戶的求職方向，以便做語意推薦</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/onboarding</code>（首次登入自動導向）</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li>用戶輸入一句話描述想找的工作（如「專案管理實習生」）</li>
+        <li>LLM 自動擴展為相關關鍵字（如「專案管理實習、Product Manager Intern、產品經理實習生、PRD」）</li>
+        <li>用戶可編輯/刪除擴展結果</li>
+        <li>確認後儲存為 JobIntent，觸發首次爬蟲 + 推薦</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>輸入「PM 實習」後，LLM 擴展出 5+ 相關關鍵字</li>
+        <li>完成 Onboarding 後導向 Dashboard</li>
+        <li>Dashboard 顯示推薦清單（非空）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 4: 爬蟲 + 推薦 + Email -->
+  <div class="story">
+    <div class="story-title">Story 4: 爬蟲 + 語意推薦 + 每日 Email <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">每天自動爬取職缺、語意匹配、Email 通知用戶</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/api/cron/daily</code>（每日 cron 觸發）</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li><strong>爬蟲：</strong>每日 cron 觸發，根據用戶 JobIntent 關鍵字爬取 104 職缺。使用 Python curl_cffi 繞過 Cloudflare + Playwright fallback。爬取欄位：職稱、公司名、地點、薪資、技能、描述、招募活動度。自動去重（by externalUrl）</li>
+        <li><strong>語意匹配：</strong>JD 和用戶意圖分別轉 768 維 embedding（pgvector）。finalScore = intentScore，按分數排序，保留近三天數據</li>
+        <li><strong>Email：</strong>每日一封，含 Top 5 推薦 + 點擊追蹤 token。技術：Resend + React Email</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>Cron 觸發後爬取 50+ 筆職缺（無重複）</li>
+        <li>推薦清單按相符度排序，分數合理分佈</li>
+        <li>Email 送達且 click tracking 可追蹤</li>
+        <li>爬蟲失敗率 &le; 10%</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 5: 找工作頁 -->
+  <div class="story">
+    <div class="story-title">Story 5: 找工作頁 <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">讓用戶瀏覽 AI 推薦、收藏職缺、管理收藏</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/saved</code></div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li><strong>AI 推薦 tab：</strong>顯示所有推薦職缺，每張卡片含職稱、公司名、地點、來源平台 tag、相符度 %、收藏按鈕。支援搜尋（關鍵字）、篩選（相符度門檻）、排序（相符度/日期）</li>
+        <li><strong>我的收藏 tab：</strong>顯示已收藏職缺，可按來源平台篩選（104/LinkedIn/Cake/手動）。每張卡片有「投遞準備」和「投遞」按鈕</li>
+        <li><strong>新增職缺：</strong>手動貼 URL 新增不在推薦裡的職缺（呼叫 <code>/api/parse-jd</code> 解析）</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>AI 推薦 tab 顯示推薦職缺，按相符度排序</li>
+        <li>點擊「收藏」後職缺出現在「我的收藏」tab</li>
+        <li>搜尋和篩選功能正常運作</li>
+        <li>手動貼 URL 可成功解析並新增到收藏</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 6: 求職追蹤 -->
+  <div class="story">
+    <div class="story-title">Story 6: 求職追蹤 <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">讓用戶追蹤每間公司的投遞狀態，自動提醒久沒回音</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/board</code></div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li><strong>清單視圖：</strong>頂部漏斗（投遞中 &rarr; 面試中 &rarr; Offer，顯示轉換率）。分群顯示：投遞中/未投遞/錄取/封存。每列：公司名、職缺、狀態標籤、天數</li>
+        <li><strong>看板視圖：</strong>四欄（未投遞/投遞中/面試中/結果），卡片可拖曳切換狀態</li>
+        <li><strong>久沒回音警示：</strong>投遞超過 14 天未更新狀態，顯示警示標籤 + 封存按鈕</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>清單和看板兩種視圖可切換，數據同步</li>
+        <li>漏斗轉換率計算正確</li>
+        <li>超過 14 天的投遞顯示「久沒回音」警示</li>
+        <li>看板卡片可拖曳更新狀態</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 7: 推薦信 -->
+  <div class="story">
+    <div class="story-title">Story 7: 推薦信 AI 生成 <span class="tag tag-v2">V2</span> <span class="tag tag-p1">P1</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">讓用戶投遞時一鍵生成客製化推薦信，降低「收藏→投遞」的摩擦</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/board/[applicationId]</code> &rarr; 推薦信 tab</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li>點擊「生成推薦信」&rarr; POST <code>/api/cover-letter/generate</code></li>
+        <li>後端讀取用戶 Resume + 個人檔案（如有）+ JD 資訊</li>
+        <li>Groq LLM（llama-3.3-70b, temp 0.7）生成 300-500 字推薦信，專業正式語氣</li>
+        <li>前端顯示在可編輯 textarea，用戶可自行調整</li>
+        <li>提供「複製」和「重新生成」按鈕</li>
+        <li>例外：履歷未上傳 &rarr; 提示「請先上傳履歷」；LLM 失敗 &rarr; retry 1 次；超時 &gt;15s &rarr; timeout 提示</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>操作面：點擊「生成推薦信」後 15 秒內顯示結果</li>
+        <li>輸出面：推薦信包含用戶背景 + JD 關鍵需求，300-500 字</li>
+        <li>限制面：未上傳履歷時顯示引導提示而非錯誤</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 8: AI 面試準備 -->
+  <div class="story">
+    <div class="story-title">Story 8: AI 面試準備 <span class="tag tag-v2">V2</span> <span class="tag tag-p1">P1</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">根據 JD、用戶履歷、歷史面試經驗出題，讓每次準備都比上次更精準</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/board/[applicationId]</code> &rarr; 面試準備 tab</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li>POST <code>/api/applications/[id]/ai-questions</code> 生成面試題目</li>
+        <li>題目來源：JD 技能需求 + 用戶履歷匹配 + QuestionBank 歷史題庫加權</li>
+        <li>每題標注：類別（技術/行為/情境）、來源（新題/歷史延伸）</li>
+        <li>歷史延伸題顯示：上次表現（good/ok/needs_improvement）+ 改善建議</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>生成 5-8 題面試題目，涵蓋多個類別</li>
+        <li>有歷史復盤數據時，至少 1 題標注為「歷史延伸」</li>
+        <li>歷史延伸題顯示上次表現和改善建議</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 9: 面試復盤 -->
+  <div class="story">
+    <div class="story-title">Story 9: 手動面試記錄 <span class="tag tag-v2">V2</span> <span class="tag tag-p1">P1</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">面試後快速記錄 Q&A，確保復盤閉環不會因為「太累」而斷掉</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/board/[applicationId]</code> &rarr; 面試復盤 tab &rarr; 手動記錄</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li>用戶填寫多題 Q&A（題目 + 回答 + 自評 good/ok/needs_improvement）</li>
+        <li>POST <code>/api/applications/[id]/review/manual</code></li>
+        <li>進入 AI 分析 pipeline：LLM 萃取品質評估 + 改善建議 + overallFeedback</li>
+        <li>自動寫入 QuestionBank（回饋到 Story 8 的出題權重）</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>填寫 3 題 Q&A 後提交，AI 分析結果在 10 秒內顯示</li>
+        <li>每題有品質評估標籤 + 改善建議</li>
+        <li>提交後 QuestionBank 新增對應記錄</li>
+        <li>下次使用 Story 8 時，新題目反映歷史數據</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Story 10: 錄音復盤 -->
+  <div class="story">
+    <div class="story-title">Story 10: 面試錄音 + AI 復盤 <span class="tag tag-v2">V2</span> <span class="tag tag-p2">P2</span></div>
+    <div class="story-label">目標</div>
+    <div class="story-content">上傳面試錄音，AI 自動轉文字並分析回答品質</div>
+    <div class="story-label">路徑</div>
+    <div class="story-content"><code>/board/[applicationId]</code> &rarr; 面試復盤 tab &rarr; 上傳錄音</div>
+    <div class="story-label">需求</div>
+    <div class="story-content">
+      <ul>
+        <li>上傳音檔（mp3/m4a/wav, max 50MB）&rarr; Supabase Storage</li>
+        <li>Whisper API 轉文字（$0.006/min，中英混合支援）</li>
+        <li>Groq LLM 萃取 Q&A：每題含 question, answer_summary, quality, improvement_tip, category</li>
+        <li>生成 overallFeedback（整體摘要 + 3 項改善重點）</li>
+        <li>自動寫入 QuestionBank</li>
+      </ul>
+    </div>
+    <div class="story-label">驗收標準</div>
+    <div class="story-ac">
+      <ul>
+        <li>上傳 10 分鐘音檔後，2 分鐘內完成轉文字 + AI 分析</li>
+        <li>萃取 Q&A 數量合理（通常 5-10 題）</li>
+        <li>每題有品質標籤 + 改善建議</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  四、技術架構                                                   -->
+<!-- ============================================================ -->
+<div class="page-break"></div>
+<div class="card" id="s4">
+  <h2><span class="sn">4</span>四、技術架構</h2>
+
+  <h3>Tech Stack</h3>
+  <table>
+    <tr><th>類別</th><th>選型</th><th>理由</th></tr>
+    <tr><td>Framework</td><td>Next.js (App Router) + TypeScript</td><td>全端一體、Server Components、台灣社群資源多</td></tr>
+    <tr><td>Database</td><td>PostgreSQL (Supabase) + pgvector</td><td>免費額度足夠、內建向量搜尋</td></tr>
+    <tr><td>ORM</td><td>Prisma</td><td>Type-safe schema、migration 管理</td></tr>
+    <tr><td>LLM</td><td>Groq (llama-3.3-70b)</td><td>推理速度快、免費額度充足</td></tr>
+    <tr><td>語音轉文字</td><td>OpenAI Whisper API</td><td>中英混合支援最好、$0.006/min</td></tr>
+    <tr><td>Email</td><td>Resend + React Email</td><td>開發者體驗好、免費額度足夠</td></tr>
+    <tr><td>Auth</td><td>NextAuth v5</td><td>Magic Link + Google 深度整合</td></tr>
+    <tr><td>Storage</td><td>Supabase Storage</td><td>RLS + signed URL</td></tr>
+    <tr><td>Crawler</td><td>Python curl_cffi + Playwright</td><td>curl_cffi 繞 Cloudflare</td></tr>
+    <tr><td>Deploy</td><td>Vercel</td><td>Next.js 官方部署、CI/CD 零設定</td></tr>
+  </table>
+
+  <h3>API 端點</h3>
+  <h4>MVP</h4>
+  <table>
+    <tr><th>Method</th><th>Path</th><th>Auth</th><th>說明</th></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/auth/[...nextauth]</code></td><td>--</td><td>NextAuth handlers</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/intent</code></td><td>Yes</td><td>設定求職關鍵字</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/intent/expand</code></td><td>Yes</td><td>LLM 擴展關鍵字</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/parse-jd</code></td><td>Yes</td><td>解析 JD URL</td></tr>
+    <tr><td><span class="api-method api-get">GET</span></td><td><code>/api/saved-jobs</code></td><td>Yes</td><td>列出收藏職缺</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/saved-jobs</code></td><td>Yes</td><td>收藏職缺</td></tr>
+    <tr><td><span class="api-method api-delete">DELETE</span></td><td><code>/api/saved-jobs/[id]</code></td><td>Yes</td><td>刪除收藏</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/applications</code></td><td>Yes</td><td>建立投遞追蹤</td></tr>
+    <tr><td><span class="api-method api-get">GET</span></td><td><code>/api/cron/daily</code></td><td>--</td><td>每日爬蟲 + 推薦 + Email</td></tr>
+    <tr><td><span class="api-method api-get">GET</span></td><td><code>/api/track/click</code></td><td>--</td><td>Email 點擊追蹤</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/recommendations/try</code></td><td>No</td><td>Landing 試玩推薦（rate limit）</td></tr>
+  </table>
+
+  <h4>V2 新增</h4>
+  <table>
+    <tr><th>Method</th><th>Path</th><th>Auth</th><th>說明</th></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/resume/upload</code></td><td>Yes</td><td>履歷上傳 + LLM 解析</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/cover-letter/generate</code></td><td>Yes</td><td>推薦信生成</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/applications/[id]/ai-questions</code></td><td>Yes</td><td>AI 面試出題</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/applications/[id]/review/upload</code></td><td>Yes</td><td>上傳面試錄音</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/applications/[id]/review/transcribe</code></td><td>Yes</td><td>Whisper 轉文字</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/applications/[id]/review/analyze</code></td><td>Yes</td><td>AI 萃取 Q&A + 回饋題庫</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/applications/[id]/review/manual</code></td><td>Yes</td><td>手動面試記錄 + AI 分析</td></tr>
+    <tr><td><span class="api-method api-get">GET</span></td><td><code>/api/profile</code></td><td>Yes</td><td>讀取個人檔案</td></tr>
+    <tr><td><span class="api-method api-post">POST</span></td><td><code>/api/profile</code></td><td>Yes</td><td>更新個人檔案</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!--  五、時程規劃                                                   -->
+<!-- ============================================================ -->
+<div class="card" id="s5">
+  <h2><span class="sn">5</span>五、時程規劃</h2>
+
+  <h3>1. 團隊組成</h3>
+  <table>
+    <tr><th>角色</th><th>人數</th><th>負責範圍</th></tr>
+    <tr><td>PM</td><td>1</td><td>需求定義、優先級排序、驗收</td></tr>
+    <tr><td>Full-stack Dev</td><td>1</td><td>前後端開發、部署</td></tr>
+  </table>
+
+  <h3>2. 時程表</h3>
+  <table>
+    <tr><th>Phase</th><th>週次</th><th>交付內容</th><th>驗收標準</th></tr>
+    <tr><td><strong>MVP-1</strong></td><td>W1</td><td>Landing Page + 登入 + Onboarding</td><td>訪客可試玩職缺推薦、新用戶可設定關鍵字</td></tr>
+    <tr><td><strong>MVP-2</strong></td><td>W2-3</td><td>爬蟲 + 推薦 + Email + Dashboard</td><td>每日推薦產出、Email 送達</td></tr>
+    <tr><td><strong>MVP-3</strong></td><td>W4</td><td>找工作頁 + 收藏 + 求職追蹤</td><td>推薦 &rarr; 收藏 &rarr; 投遞路徑可用</td></tr>
+    <tr><td colspan="4" style="background:#f5f0e8;text-align:center;font-weight:600">MVP 驗證期（W5-6，觀察 H1-H3）</td></tr>
+    <tr><td><strong>V2-1</strong></td><td>W7-8</td><td>履歷上傳 + 推薦信 + 個人檔案</td><td>一鍵生成推薦信，可編輯 + 複製</td></tr>
+    <tr><td><strong>V2-2</strong></td><td>W9-10</td><td>AI 面試準備</td><td>根據 JD + 履歷出題，有類別分佈</td></tr>
+    <tr><td><strong>V2-3</strong></td><td>W11-13</td><td>手動記錄 + 錄音復盤 + 題庫進化</td><td>復盤後下次準備有歷史延伸標記</td></tr>
+    <tr><td><strong>V2-4</strong></td><td>W14</td><td>UI 優化 + 部署</td><td>公網可訪問，3 分鐘內理解產品全貌</td></tr>
+  </table>
+
+  <h3>風險矩陣</h3>
+  <table>
+    <tr><th>風險</th><th>嚴重度</th><th>預防措施</th></tr>
+    <tr><td>104 爬蟲被 Cloudflare 擋</td><td style="color:#dc2626;font-weight:600">高</td><td>curl_cffi + Playwright fallback + Day 1 健康監控</td></tr>
+    <tr><td>面試後太累不做復盤</td><td style="color:#dc2626;font-weight:600">高</td><td>手動快速問卷 fallback（1 分鐘）+ 48hr 提醒</td></tr>
+    <tr><td>Scope creep</td><td style="color:#dc2626;font-weight:600">高</td><td>嚴格 MVP/V2 分界 + Not Doing List</td></tr>
+    <tr><td>LLM 成本超預算</td><td style="color:#d97706;font-weight:600">中</td><td>Groq 免費額度 + 每日上限 + 護欄 &le; $2/user/month</td></tr>
+    <tr><td>語意推薦不夠精準</td><td style="color:#d97706;font-weight:600">中</td><td>收藏率做 proxy metric，不準就調 embedding model</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!--  六、參考資料                                                   -->
+<!-- ============================================================ -->
+<div class="card" id="s6">
+  <h2><span class="sn">6</span>六、參考資料</h2>
+
+  <h3>1. 相關文件</h3>
+  <table>
+    <tr><th>用途</th><th>連結</th><th>備註</th></tr>
+    <tr><td>Notion 作品集</td><td><code>https://app.notion.com/p/37d8f7df863581c9a939f889932b4fef</code></td><td>7 幕 toggle heading</td></tr>
+    <tr><td>競品參考 — Jobbo</td><td><code>https://jobbojobs.com</code></td><td>Landing Page + 閃卡篩選</td></tr>
+    <tr><td>程式碼</td><td><code>/Users/annie24578/Desktop/vibe coding/job-tool/</code></td><td>Next.js App Router</td></tr>
+    <tr><td>設計稿</td><td>[ Figma 連結 ]</td><td>待補</td></tr>
+  </table>
+</div>
+
+<div style="text-align:center;padding:32px;color:#94a3b8;font-size:12px">
+  JobPilot PRD v4.0 &mdash; 2026-06-12 &mdash; Charles
+</div>
+
+</div>
+
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { useMaxWidth: true, curve: 'basis' } });
+</script>
+</body>
+</html>

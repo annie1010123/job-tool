@@ -13,9 +13,10 @@ export async function POST(req: NextRequest) {
   }
   const userId = session.user.id;
 
-  const { rawInput, selectedKeywords } = (await req.json()) as {
+  const { rawInput, selectedKeywords, locationFilter } = (await req.json()) as {
     rawInput?: string;
     selectedKeywords?: string[];
+    locationFilter?: string[];
   };
   if (!rawInput?.trim()) {
     return NextResponse.json({ error: "請輸入求職意圖" }, { status: 400 });
@@ -30,6 +31,14 @@ export async function POST(req: NextRequest) {
     create: { userId, rawInput: rawInput.trim(), expandedKeywords },
     update: { rawInput: rawInput.trim(), expandedKeywords },
   });
+
+  // Update locationFilter on User if provided
+  if (locationFilter && Array.isArray(locationFilter)) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { locationFilter },
+    });
+  }
 
   // Generate and store embedding (non-blocking)
   try {
