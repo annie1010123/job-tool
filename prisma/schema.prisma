@@ -27,7 +27,6 @@ model User {
   recommendations  Recommendation[]
   emailLogs        EmailLog[]
   applications     Application[]
-  savedJobs        SavedJob[]
   questionBank     QuestionBank[]
   workExperiences  WorkExperience[]
 }
@@ -145,7 +144,6 @@ model Jd {
   recommendations  Recommendation[]
   emailLogs        EmailLog[]
   applications     Application[]
-  savedJobs        SavedJob[]
 }
 
 model JdEmbedding {
@@ -215,25 +213,6 @@ model InterviewRecord {
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
-// ─── Saved Jobs ──────────────────────────────────────────────────────────────
-
-model SavedJob {
-  id          String   @id @default(cuid())
-  userId      String
-  jdId        String?
-  externalUrl String
-  companyName String
-  title       String
-  platform    String   @default("other")
-  companyType String?
-  status      String   @default("watching")
-  savedAt     DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jd   Jd?  @relation(fields: [jdId], references: [id])
-
-  @@unique([userId, externalUrl])
-}
 
 // ─── Email ───────────────────────────────────────────────────────────────────
 
