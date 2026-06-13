@@ -67,8 +67,13 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
   const recentCutoff = new Date();
   recentCutoff.setDate(recentCutoff.getDate() - 7);
 
-  // 只要實習：標題須含 實習 / intern / 工讀（seniority 欄位不可靠，用標題判斷）
-  const internClause = Prisma.sql`(j.title ILIKE '%實習%' OR j.title ILIKE '%intern%' OR j.title ILIKE '%工讀%')`;
+  // 依求職意圖自動判斷：意圖提到實習/intern/工讀 → 只篩實習；否則不限職缺型態
+  // （改意圖找正職時，這裡會自動關閉實習過濾）
+  const intentText = `${intent.rawInput} ${keywords.join(" ")}`.toLowerCase();
+  const wantsIntern = /實習|intern|工讀/.test(intentText);
+  const internClause = wantsIntern
+    ? Prisma.sql`(j.title ILIKE '%實習%' OR j.title ILIKE '%intern%' OR j.title ILIKE '%工讀%')`
+    : Prisma.sql`TRUE`;
 
   // Check if user has resume embedding
   const resumeEmb = await prisma.resumeEmbedding.findFirst({

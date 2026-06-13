@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
   for (const user of users) {
     try {
-      const matches = await matchForUser(user.id, 30);
+      const matches = await matchForUser(user.id, 40);
       if (matches.length === 0) continue;
 
       // Boost
@@ -73,11 +73,13 @@ export async function GET(req: NextRequest) {
         return true;
       });
 
-      // ── LLM 重排（精排）：對前 20 筆候選評 fitScore（職類適配度）+ 寫理由 ──
+      // ── LLM 重排（精排）：對候選評 fitScore（職類適配度）+ 寫理由 ──
       // embedding 負責召回（廣度），LLM 負責精準判斷職類相符（殺掉「沾邊但職類不同」的職缺）
       const FIT_THRESHOLD = 5;
+      const MAX_RERANK = 30;   // LLM 成本上限
+      const MAX_RESULTS = 30;  // email/推薦數量上限（不固定每天 10 筆，夠格的都顯示）
       const intentRaw = user.jobIntent?.rawInput ?? "";
-      const rerankPool = dedupedMatches.slice(0, 20);
+      const rerankPool = dedupedMatches.slice(0, MAX_RERANK);
       const reasons = await generateReasons(
         intentRaw,
         rerankPool.map((m) => {
@@ -88,7 +90,7 @@ export async function GET(req: NextRequest) {
       );
       const reasonMap = Object.fromEntries(reasons.map((r) => [r.jdId, r]));
 
-      // 過濾低適配 + 依 fitScore 重排（同分用 embedding finalScore），取 top 10
+      // 過濾低適配 + 依 fitScore 重排（同分用 embedding finalScore）；不固定數量，夠格的都收
       const boostedMatches = rerankPool
         .filter((m) => (reasonMap[m.jdId]?.fitScore ?? 6) >= FIT_THRESHOLD)
         .sort((a, b) => {
@@ -96,7 +98,7 @@ export async function GET(req: NextRequest) {
           const fb = reasonMap[b.jdId]?.fitScore ?? 6;
           return fb !== fa ? fb - fa : b.finalScore - a.finalScore;
         })
-        .slice(0, 10);
+        .slice(0, MAX_RESULTS);
 
       if (boostedMatches.length === 0) continue;
 
