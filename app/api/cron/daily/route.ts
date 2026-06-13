@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
 
       // ── LLM 重排（精排）：對候選評 fitScore（職類適配度）+ 寫理由 ──
       // embedding 負責召回（廣度），LLM 負責精準判斷職類相符（殺掉「沾邊但職類不同」的職缺）
-      const FIT_THRESHOLD = 5;
+      const FIT_THRESHOLD = 4;
       const MAX_RERANK = 30;   // LLM 成本上限
       const MAX_RESULTS = 30;  // email/推薦數量上限（不固定每天 10 筆，夠格的都顯示）
       const intentRaw = user.jobIntent?.rawInput ?? "";
