@@ -128,7 +128,7 @@ tr:nth-child(even) td { background: #faf9f6; }
     <tr><td>F2</td><td>Onboarding</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>求職關鍵字設定 + LLM 關鍵字擴展</td></tr>
     <tr><td>F3</td><td>爬蟲 + 推薦 + Email</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>104 爬蟲 + Embedding 語意匹配 + 每日 Email</td></tr>
     <tr><td>F4</td><td>Dashboard</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p2">P2</span></td><td>問候語 + 漏斗 + 待處理 + 動態</td></tr>
-    <tr><td>F5</td><td>找工作頁</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>AI 推薦 tab + 我的收藏 tab + 搜尋篩選</td></tr>
+    <tr><td>F5</td><td>找工作頁</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>AI 推薦 + 收藏整合為單一頁面，搜尋篩選 + 職缺詳情 modal</td></tr>
     <tr><td>F6</td><td>求職追蹤</td><td><span class="tag tag-mvp">MVP</span></td><td><span class="tag tag-p0">P0</span></td><td>清單 + Kanban + 漏斗轉換率 + 久沒回音警示</td></tr>
     <tr><td>F7</td><td>推薦信 AI 生成</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p1">P1</span></td><td>根據履歷 + JD 自動生成，可編輯 + 複製</td></tr>
     <tr><td>F8</td><td>個人檔案</td><td><span class="tag tag-v2">V2</span></td><td><span class="tag tag-p2">P2</span></td><td>基本資訊 + 工作經歷 + 專案經歷 + 技能</td></tr>
@@ -491,23 +491,27 @@ erDiagram
   <div class="story">
     <div class="story-title">Story 5: 找工作頁 <span class="tag tag-mvp">MVP</span> <span class="tag tag-p0">P0</span></div>
     <div class="story-label">目標</div>
-    <div class="story-content">讓用戶瀏覽 AI 推薦、收藏職缺、管理收藏</div>
+    <div class="story-content">讓用戶在單一頁面瀏覽 AI 推薦職缺、收藏、查看詳情與生成推薦信</div>
     <div class="story-label">路徑</div>
     <div class="story-content"><code>/saved</code></div>
     <div class="story-label">需求</div>
     <div class="story-content">
       <ul>
-        <li><strong>AI 推薦 tab：</strong>顯示所有推薦職缺，每張卡片含職稱、公司名、地點、來源平台 tag、相符度 %、收藏按鈕。支援搜尋（關鍵字）、篩選（相符度門檻）、排序（相符度/日期）</li>
-        <li><strong>我的收藏 tab：</strong>顯示已收藏職缺，可按來源平台篩選（104/LinkedIn/Cake/手動）。每張卡片有「投遞準備」和「投遞」按鈕</li>
+        <li><strong>整合式清單：</strong>AI 推薦與已收藏職缺整合為單一清單（不分 tab），每張卡片含職稱、公司名、地點、來源平台 tag、相符度 %、收藏/已儲存按鈕。支援篩選（相符度門檻、積極徵才）、排序（相符度/日期/薪資）</li>
+        <li><strong>職缺詳情 Modal：</strong>點擊卡片開啟全螢幕 Modal，左欄顯示完整 JD（工作內容、要求條件、技能需求），右欄為推薦信 AI 生成器（支援中/英文切換、可編輯、一鍵複製）</li>
         <li><strong>新增職缺：</strong>手動貼 URL 新增不在推薦裡的職缺（呼叫 <code>/api/parse-jd</code> 解析）</li>
       </ul>
+    </div>
+    <div class="story-label">設計決策</div>
+    <div class="story-content">
+      <blockquote>原設計為「AI 推薦」與「我的收藏」兩個 tab，開發後發現分 tab 增加操作步驟且造成認知負擔，合併後用戶可在同一頁面完成「瀏覽→收藏→查看詳情→生成推薦信」的完整流程，降低摩擦。</blockquote>
     </div>
     <div class="story-label">驗收標準</div>
     <div class="story-ac">
       <ul>
-        <li>AI 推薦 tab 顯示推薦職缺，按相符度排序</li>
-        <li>點擊「收藏」後職缺出現在「我的收藏」tab</li>
-        <li>搜尋和篩選功能正常運作</li>
+        <li>頁面顯示推薦職缺清單，按相符度排序，已收藏的顯示「已儲存」標記</li>
+        <li>點擊卡片開啟 Modal，左欄顯示 JD、右欄可生成推薦信</li>
+        <li>篩選和排序功能正常運作</li>
         <li>手動貼 URL 可成功解析並新增到收藏</li>
       </ul>
     </div>

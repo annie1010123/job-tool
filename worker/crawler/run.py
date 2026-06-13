@@ -459,5 +459,35 @@ def main():
 
     conn.close()
 
+    # ── Phase 6: 觸發 Vercel daily cron（match + 寄信）──
+    trigger_daily_cron()
+
+
+def trigger_daily_cron():
+    """爬蟲完成後自動呼叫 Vercel 的 /api/cron/daily，觸發 match + 寄信。"""
+    app_url = os.environ.get("APP_URL", "https://job-tool-three.vercel.app")
+    cron_secret = os.environ.get("CRON_SECRET", "")
+    if not cron_secret:
+        print("\n⚠️ 沒有 CRON_SECRET，跳過觸發 daily cron")
+        return
+
+    url = f"{app_url}/api/cron/daily"
+    print(f"\n── Phase 6: 觸發 Daily Cron ──")
+    print(f"  POST {url}")
+
+    try:
+        resp = session.get(url, headers={
+            "Authorization": f"Bearer {cron_secret}",
+            "User-Agent": "JobPilot-Crawler/1.0",
+        }, timeout=120)
+        if resp.status_code == 200:
+            data = resp.json()
+            print(f"  ✅ 成功！sent={data.get('sent', 0)}, failed={data.get('failed', 0)}")
+        else:
+            print(f"  ❌ HTTP {resp.status_code}: {resp.text[:200]}")
+    except Exception as e:
+        print(f"  ❌ 觸發失敗: {str(e)[:100]}")
+
+
 if __name__ == "__main__":
     main()

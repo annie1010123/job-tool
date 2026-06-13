@@ -13,7 +13,7 @@ export default async function BoardPage() {
 
   const [applications, archivedApplications] = await Promise.all([
     prisma.application.findMany({
-      where: { userId: session.user.id, isArchived: false, status: { not: "watching" } },
+      where: { userId: session.user.id, isArchived: false },
       include: {
         jd: { select: { id: true, title: true, companyName: true, externalUrl: true, postedAt: true } },
         interviewRecords: true,
