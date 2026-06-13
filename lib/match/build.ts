@@ -6,7 +6,7 @@ import { generateReasons } from "./reason";
 const FIT_THRESHOLD = 4;   // LLM 適配分門檻
 const MAX_RERANK = 30;     // 送 LLM 評分的上限（成本）
 const MAX_RESULTS = 30;    // 最終推薦數上限（不固定數量，夠格的都收）
-const POSTED_MAX_DAYS = 30; // 上架超過這天數的職缺不推薦（自動清久遠；postedAt 為空則保留）
+const POSTED_MAX_DAYS = 14; // 上架超過這天數的職缺不推薦（自動清久遠；postedAt 為空則保留）
 
 /** 判斷職缺上架是否超過 N 天。postedAt 格式 "YYYY/MM/DD"；無法解析（含 "null"）視為未知 → 不排除 */
 function isStalePosting(postedAt: string | null, maxDays: number): boolean {
