@@ -210,15 +210,24 @@ def embed_jd(job: dict) -> list[float]:
         f"薪資：{job.get('salaryRange', '')}\n"
         f"描述：{(job.get('description') or '')[:800]}"
     )
-    resp = session.post(
-        f"{GEMINI_EMBED_URL}?key={api_key}",
-        headers={"Content-Type": "application/json"},
-        json={"model": "models/gemini-embedding-001", "content": {"parts": [{"text": text}]}, "outputDimensionality": 768},
-        timeout=30,
-    )
-    if resp.status_code != 200:
+    # 退避重試：Gemini 免費額度常 429，靜默失敗會讓職缺永久無 embedding（隱形）
+    for attempt in range(4):
+        resp = session.post(
+            f"{GEMINI_EMBED_URL}?key={api_key}",
+            headers={"Content-Type": "application/json"},
+            json={"model": "models/gemini-embedding-001", "content": {"parts": [{"text": text}]}, "outputDimensionality": 768},
+            timeout=30,
+        )
+        if resp.status_code == 200:
+            return resp.json()["embedding"]["values"]
+        if resp.status_code in (429, 500, 503) and attempt < 3:
+            wait = 2 ** attempt  # 1s, 2s, 4s
+            print(f"  ⏳ embed {resp.status_code}，{wait}s 後重試 ({attempt+1}/3)")
+            sleep(wait)
+            continue
+        print(f"  ⚠️ embed 失敗 HTTP {resp.status_code}")
         return []
-    return resp.json()["embedding"]["values"]
+    return []
 
 # ── DB ────────────────────────────────────────────────────────────────────────
 
@@ -297,14 +306,27 @@ def upsert_embedding(conn, jd_id: str, vector: list[float]):
             conn.commit()
     retry(_do)
 
+def has_embedding(conn, jd_id: str) -> bool:
+    with conn.cursor() as cur:
+        cur.execute('SELECT 1 FROM "JdEmbedding" WHERE "jdId" = %s', (jd_id,))
+        return cur.fetchone() is not None
+
 def get_keywords(conn) -> list[str]:
     with conn.cursor() as cur:
-        cur.execute('SELECT "expandedKeywords" FROM "JobIntent"')
+        cur.execute('SELECT "rawInput", "expandedKeywords" FROM "JobIntent"')
         rows = cur.fetchall()
     all_kws: list[str] = []
-    for (kws,) in rows:
+    intern_markers = ("實習", "intern", "工讀")
+    for raw_input, kws in rows:
         parsed = kws if isinstance(kws, list) else json.loads(kws)
         all_kws.extend(parsed)
+        # 若該意圖想找實習，為其每個關鍵字加「實習生」變體，主動把實習職缺撈進池子
+        # （104 用原關鍵字搜會被正職淹沒，實習排在後面頁數抓不到）
+        wants_intern = any(m in (raw_input or "").lower() or any(m in k.lower() for k in parsed) for m in intern_markers)
+        if wants_intern:
+            for k in parsed:
+                if not any(m in k.lower() for m in intern_markers):
+                    all_kws.append(f"{k} 實習生")
     return list(set(all_kws))
 
 def get_existing_urls(conn) -> set[str]:
@@ -422,13 +444,16 @@ def main():
             try:
                 jd_id, changed = retry(lambda: upsert_jd(conn, job))
                 existing_refreshed += 1
-                if changed:
-                    content_changed += 1
+                # 內容變動 → 重 embed；或先前 embed 失敗（無 embedding）→ 補 embed，避免永久隱形
+                need_embed = changed or not has_embedding(conn, jd_id)
+                if need_embed:
+                    if changed:
+                        content_changed += 1
                     vector = retry(lambda: embed_jd(job))
                     if len(vector) == 768:
                         upsert_embedding(conn, jd_id, vector)
                         embedded += 1
-                    print(f"🔄 內容變動！{job['title']}")
+                    print(f"{'🔄 內容變動' if changed else '🩹 補 embedding'}！{job['title']}")
                 else:
                     print(f"✓ 無變動")
             except Exception as e:
