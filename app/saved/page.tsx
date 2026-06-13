@@ -21,7 +21,22 @@ export default async function SavedPage() {
   const allRecs = await prisma.recommendation.findMany({
     where: { userId: session.user.id, dailyBatch: { gte: threeDaysAgo } },
     orderBy: { finalScore: "desc" },
-    include: { jd: true },
+    // 清單不需要 jd.description（長文，90 筆會拖慢 ~5s→~0.7s）；description 改由 Modal 開啟時才抓
+    select: {
+      id: true,
+      finalScore: true,
+      reasoning: true,
+      alignedSkills: true,
+      jdId: true,
+      dailyBatch: true,
+      jd: {
+        select: {
+          id: true, title: true, companyName: true, location: true, salaryRange: true,
+          skills: true, recruitmentActivity: true, replyDays: true, postedAt: true,
+          seniority: true, externalUrl: true, crawledAt: true, source: true,
+        },
+      },
+    },
   });
 
   // Deduplicate: keep best score per jdId

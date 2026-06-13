@@ -65,7 +65,11 @@ export default function JobDetailModal({ rec, onClose, onApplied, onSkipped }: P
   const score = Math.round(rec.finalScore * 100);
   const skills = (jd.skills as string[]) ?? [];
   const active = jd.recruitmentActivity?.includes("活躍") ?? false;
-  const { workContent, requirements, extras } = parseJdSections(jd.description);
+
+  // description 由清單延遲載入：若 rec 已帶 description 直接用，否則開啟時抓
+  const [description, setDescription] = useState<string | null>(jd.description ?? null);
+  const [descLoading, setDescLoading] = useState(jd.description == null);
+  const { workContent, requirements, extras } = parseJdSections(description);
 
   // Cover letter state
   const [emphasis, setEmphasis] = useState("");
@@ -85,6 +89,19 @@ export default function JobDetailModal({ rec, onClose, onApplied, onSkipped }: P
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
+
+  // 開啟時抓 description（清單為了速度沒帶）
+  useEffect(() => {
+    if (jd.description != null) return;
+    let cancelled = false;
+    setDescLoading(true);
+    fetch(`/api/jd/${jd.id}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data: { description: string | null }) => { if (!cancelled) setDescription(data.description); })
+      .catch(() => { if (!cancelled) setDescription(null); })
+      .finally(() => { if (!cancelled) setDescLoading(false); });
+    return () => { cancelled = true; };
+  }, [jd.id, jd.description]);
 
   async function generateCoverLetter() {
     setClLoading(true);
@@ -207,7 +224,14 @@ export default function JobDetailModal({ rec, onClose, onApplied, onSkipped }: P
 
             {/* Scrollable description */}
             <div style={{ flex: 1, overflowY: "auto", padding: "0 36px 28px" }}>
-              {workContent.length > 0 && (
+              {descLoading && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }}>
+                  {[90, 75, 82, 60, 88, 70].map((w, i) => (
+                    <div key={i} style={{ height: 12, width: `${w}%`, borderRadius: 6, background: "linear-gradient(90deg,#ecebe6 25%,#f5f4f0 50%,#ecebe6 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.2s ease-in-out infinite" }} />
+                  ))}
+                </div>
+              )}
+              {!descLoading && workContent.length > 0 && (
                 <>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#1a1a18", margin: "16px 0 10px" }}>【工作內容】</div>
                   <ol style={{ paddingLeft: 4, marginBottom: 6 }}>
@@ -242,10 +266,15 @@ export default function JobDetailModal({ rec, onClose, onApplied, onSkipped }: P
               ))}
 
               {/* fallback: raw description */}
-              {workContent.length === 0 && requirements.length === 0 && jd.description && (
+              {!descLoading && workContent.length === 0 && requirements.length === 0 && description && (
                 <p style={{ fontSize: 13.5, color: "#3d3d3a", lineHeight: 1.75, whiteSpace: "pre-wrap" }}>
-                  {jd.description}
+                  {description}
                 </p>
+              )}
+
+              {/* 無描述 */}
+              {!descLoading && workContent.length === 0 && requirements.length === 0 && !description && (
+                <p style={{ fontSize: 13, color: "#a8a7a2", marginTop: 16 }}>此職缺無詳細描述，請點「查看 104 原文」。</p>
               )}
 
               {/* Skills */}
