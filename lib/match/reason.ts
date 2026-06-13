@@ -69,7 +69,8 @@ ${jobList}
 
     if (Array.isArray(raw)) {
       return raw.map((r) => ({
-        jdId: String(r.jdId ?? ""),
+        // LLM 常把 prompt 裡的 [jdId] 連中括號一起 echo 回來，去掉才對得上 reasonMap
+        jdId: String(r.jdId ?? "").replace(/[[\]]/g, "").trim(),
         reason: r.reason ?? "",
         alignedSkills: Array.isArray(r.alignedSkills) ? r.alignedSkills : [],
         fitScore: typeof r.fitScore === "number" ? Math.max(0, Math.min(10, r.fitScore)) : 6,

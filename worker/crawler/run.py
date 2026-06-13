@@ -330,19 +330,37 @@ def get_existing_urls(conn) -> set[str]:
         return {row[0] for row in cur.fetchall()}
 
 def check_delisted(conn, seen_urls: set[str]) -> int:
-    """Mark jobs not seen in this crawl and older than 3 days as delisted."""
+    """下架偵測：候選 = 這次沒搜到 + 超過 7 天沒更新的職缺。
+    但「沒被這次關鍵字搜到」不等於下架（可能只是關鍵字沒命中），
+    所以逐一去 104 抓該職缺，只有真的抓不到（404/失效）才標下架，避免誤殺活職缺。"""
     with conn.cursor() as cur:
+        # 每次最多驗證 40 筆（最舊優先），避免一次抓太多 timeout / 撞 rate limit
         cur.execute("""
-            UPDATE "Jd"
-            SET "delistedAt" = NOW()
+            SELECT id, "externalUrl" FROM "Jd"
             WHERE "delistedAt" IS NULL
-              AND "crawledAt" < NOW() - INTERVAL '3 days'
+              AND "crawledAt" < NOW() - INTERVAL '7 days'
               AND "externalUrl" NOT IN (SELECT unnest(%s::text[]))
-            RETURNING id
+            ORDER BY "crawledAt" ASC
+            LIMIT 40
         """, (list(seen_urls),))
-        count = cur.rowcount
-        conn.commit()
-        return count
+        candidates = cur.fetchall()
+
+    print(f"  下架候選 {len(candidates)} 筆，逐一向 104 確認...")
+    delisted = 0
+    for jd_id, url in candidates:
+        job = fetch_job_detail(url)  # 抓不到回 None
+        if job is None:
+            with conn.cursor() as cur:
+                cur.execute('UPDATE "Jd" SET "delistedAt" = NOW() WHERE id = %s', (jd_id,))
+                conn.commit()
+            delisted += 1
+        else:
+            # 還活著：更新 crawledAt，避免下次又被當候選反覆查
+            with conn.cursor() as cur:
+                cur.execute('UPDATE "Jd" SET "crawledAt" = NOW() WHERE id = %s', (jd_id,))
+                conn.commit()
+        human_delay()
+    return delisted
 
 def send_health_report(conn, stats: dict):
     """Log crawl health stats to a simple table or print summary."""
