@@ -150,15 +150,11 @@ pnpm prisma migrate dev
 # 4. 啟動 dev server
 pnpm dev
 
-# 5. 爬取職缺（第一次）
-pnpm tsx worker/crawler/run.ts
+# 5. 爬取職缺（Python 爬蟲，Railway 上以 `python run.py` 排程執行）
+cd worker/crawler && pip install -r requirements.txt && python run.py
 
-# 6. 跑 match + 寄信
-pnpm tsx worker/match/run.ts
-pnpm tsx worker/email/run.ts
-
-# 7. 跑 evaluation
-pnpm tsx worker/eval/run.ts
+# 6. match + 寄信：爬蟲完成後自動觸發 Vercel cron /api/cron/daily
+#    本地手動觸發：curl -H "Authorization: Bearer $CRON_SECRET" localhost:3000/api/cron/daily
 ```
 
 ---
@@ -188,13 +184,13 @@ app/
   dashboard/          # 今日推薦列表
   onboarding/         # 履歷上傳 + 求職意圖輸入
 lib/
-  crawler/crawl.ts    # Playwright 104 爬蟲核心
   match/score.ts      # 雙 embedding cosine + boost 排名
   match/reason.ts     # Groq 推薦理由批次生成
   match/preview.ts    # Onboarding 完成後即時 preview email
+  email/send.ts       # Resend 寄送每日推薦
   email/template.tsx  # React Email DailyDigest 模板
 worker/
-  crawler/run.ts      # 每日爬蟲 script
-  match/run.ts        # Match 計算 script
-  eval/run.ts         # Evaluation 三組對照
+  crawler/run.py      # 104 爬蟲（curl_cffi 反偵測，Railway 排程；含 embedding + 觸發 cron）
 ```
+
+> 完整功能 → 檔案對照見 `docs/FILE-MAP.md`

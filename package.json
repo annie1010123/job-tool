@@ -12,11 +12,6 @@
     "test:integration": "vitest --project integration",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "worker:dev": "tsx worker/index.ts",
-    "worker:run-once": "tsx worker/index.ts --once",
-    "eval:baseline": "tsx evaluation/baseline.ts",
-    "eval:system": "tsx evaluation/system.ts",
-    "eval:compare": "tsx evaluation/compare.ts",
     "prepare": "husky"
   },
   "dependencies": {
