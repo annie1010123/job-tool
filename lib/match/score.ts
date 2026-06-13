@@ -61,6 +61,9 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
   if (!intentEmb) return [];
 
   const keywords = intent.expandedKeywords as string[];
+  // 角色關鍵字當「候選門票」（避免 PRD/Agile 等技能字把工程師撈進候選）；舊資料 fallback 全部
+  const roleKw = intent.roleKeywords as string[];
+  const gateKeywords = roleKw.length > 0 ? roleKw : keywords;
   const fetchN = topN * 3;
 
   // Only consider jobs crawled in the last 7 days
@@ -86,10 +89,10 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
   // Path A: keyword filter
   let keywordCandidates: Array<{ jdId: string; intentScore: number; title: string; description: string | null }> = [];
 
-  if (keywords.length > 0) {
-    const titleConds = keywords.map((k) => Prisma.sql`j.title ILIKE ${"%" + k + "%"}`);
-    const descConds  = keywords.map((k) => Prisma.sql`j.description ILIKE ${"%" + k + "%"}`);
-    const orClause   = [...titleConds, ...descConds].reduce((a, b) => Prisma.sql`${a} OR ${b}`);
+  if (gateKeywords.length > 0) {
+    // 門票只比對「職稱」(title)，用角色關鍵字 → 候選都是對的職種
+    const titleConds = gateKeywords.map((k) => Prisma.sql`j.title ILIKE ${"%" + k + "%"}`);
+    const orClause   = titleConds.reduce((a, b) => Prisma.sql`${a} OR ${b}`);
 
     keywordCandidates = await prisma.$queryRaw<typeof keywordCandidates>`
       SELECT

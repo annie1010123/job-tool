@@ -312,21 +312,16 @@ def has_embedding(conn, jd_id: str) -> bool:
         return cur.fetchone() is not None
 
 def get_keywords(conn) -> list[str]:
+    # 用角色關鍵字搜尋（職稱/職種，含受僱型態），不用技能字（PRD/Agile 等會撈到工程師/行政）
+    # roleKeywords 由意圖解析時 LLM 分類；舊資料若為空則 fallback 用 expandedKeywords
     with conn.cursor() as cur:
-        cur.execute('SELECT "rawInput", "expandedKeywords" FROM "JobIntent"')
+        cur.execute('SELECT "roleKeywords", "expandedKeywords" FROM "JobIntent"')
         rows = cur.fetchall()
     all_kws: list[str] = []
-    intern_markers = ("實習", "intern", "工讀")
-    for raw_input, kws in rows:
-        parsed = kws if isinstance(kws, list) else json.loads(kws)
-        all_kws.extend(parsed)
-        # 若該意圖想找實習，為其每個關鍵字加「實習生」變體，主動把實習職缺撈進池子
-        # （104 用原關鍵字搜會被正職淹沒，實習排在後面頁數抓不到）
-        wants_intern = any(m in (raw_input or "").lower() or any(m in k.lower() for k in parsed) for m in intern_markers)
-        if wants_intern:
-            for k in parsed:
-                if not any(m in k.lower() for m in intern_markers):
-                    all_kws.append(f"{k} 實習生")
+    for role_kws, exp_kws in rows:
+        role = role_kws if isinstance(role_kws, list) else (json.loads(role_kws) if role_kws else [])
+        exp = exp_kws if isinstance(exp_kws, list) else (json.loads(exp_kws) if exp_kws else [])
+        all_kws.extend(role if role else exp)
     return list(set(all_kws))
 
 def get_existing_urls(conn) -> set[str]:

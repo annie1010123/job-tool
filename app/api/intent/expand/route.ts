@@ -22,14 +22,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "請輸入求職意圖" }, { status: 400 });
   }
 
-  // If selectedKeywords provided (confirm step), skip LLM re-expansion
-  const expandedKeywords = selectedKeywords ?? await expandIntent(rawInput.trim());
+  // 解析意圖：取得全部關鍵字 + 角色關鍵字（角色關鍵字供爬蟲搜尋，避免技能字撈到不同職種）
+  const expansion = await expandIntent(rawInput.trim());
+  const expandedKeywords = selectedKeywords ?? expansion.keywords;
+  const roleKeywords = expansion.roleKeywords;
 
   // Upsert JobIntent
   const intent = await prisma.jobIntent.upsert({
     where: { userId },
-    create: { userId, rawInput: rawInput.trim(), expandedKeywords },
-    update: { rawInput: rawInput.trim(), expandedKeywords },
+    create: { userId, rawInput: rawInput.trim(), expandedKeywords, roleKeywords },
+    update: { rawInput: rawInput.trim(), expandedKeywords, roleKeywords },
   });
 
   // Update locationFilter on User if provided
