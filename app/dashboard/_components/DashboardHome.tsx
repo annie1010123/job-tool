@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 
 interface Jd {
@@ -82,7 +81,6 @@ export default function DashboardHome({
   batchDateStr,
   isToday,
 }: Props) {
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   const greeting = getGreeting();
   const totalActive =
@@ -90,20 +88,6 @@ export default function DashboardHome({
     (statMap["applied"] ?? 0) +
     (statMap["interviewing"] ?? 0) +
     (statMap["second_round"] ?? 0);
-
-  function handleSave(jdId: string) {
-    if (savedIds.has(jdId)) return;
-    // Optimistic UI: 立刻顯示已收藏，API 背景跑
-    setSavedIds((prev) => new Set([...prev, jdId]));
-    fetch("/api/applications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jdId, status: "watching" }),
-    }).catch(() => {
-      // 失敗則回滾
-      setSavedIds((prev) => { const n = new Set(prev); n.delete(jdId); return n; });
-    });
-  }
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px" }}>
@@ -249,7 +233,7 @@ export default function DashboardHome({
           >
             🔗
           </span>
-          貼 URL 收藏職缺
+          貼 URL 新增追蹤
         </Link>
       </div>
 
@@ -443,7 +427,6 @@ export default function DashboardHome({
         ) : (
           topRecs.map((rec, i) => {
             const score = Math.round(rec.finalScore * 100);
-            const isSaved = savedIds.has(rec.jd.id);
             return (
               <div
                 key={rec.id}
@@ -488,22 +471,21 @@ export default function DashboardHome({
                   >
                     {score}%
                   </span>
-                  <button
-                    onClick={() => handleSave(rec.jd.id)}
-                    disabled={isSaved}
+                  <Link
+                    href="/saved"
                     style={{
                       fontSize: 12,
                       fontWeight: 500,
                       padding: "5px 14px",
                       borderRadius: 8,
                       border: "none",
-                      background: isSaved ? "#E1F5EE" : "#1a1a18",
-                      color: isSaved ? "#0F6E56" : "#fff",
-                      cursor: isSaved ? "default" : "pointer",
+                      background: "#1a1a18",
+                      color: "#fff",
+                      textDecoration: "none",
                     }}
                   >
-                    {isSaved ? "✓ 已收藏" : "收藏"}
-                  </button>
+                    查看 →
+                  </Link>
                 </div>
               </div>
             );

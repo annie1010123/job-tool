@@ -450,7 +450,7 @@ export default function JobDetailModal({ rec, onClose, onApplied, onSkipped }: P
               cursor: applied ? "default" : "pointer",
             }}
           >
-            {applied ? "已申請職缺" : "申請職缺"}
+            {applied ? "已申請 ✓" : "已申請"}
           </button>
           <button
             onClick={() => onSkipped(jd.id)}

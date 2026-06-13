@@ -38,7 +38,6 @@ interface Props {
   intentRaw: string;
   keywords: string[];
   batchDateStr: string | null;
-  savedJdIds: string[];
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -67,7 +66,7 @@ function postedTime(postedAt: string | null): number {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export default function FindJobPage({ recommendations, intentRaw, keywords, batchDateStr, savedJdIds }: Props) {
+export default function FindJobPage({ recommendations, intentRaw, keywords, batchDateStr }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [scoreFilter, setScoreFilter] = useState("all");
@@ -75,7 +74,6 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
   const [selectedRec, setSelectedRec] = useState<Rec | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showIntentModal, setShowIntentModal] = useState(false);
-  const savedIds = new Set(savedJdIds);
   const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
 
   const filteredRecs = useMemo(() => {
@@ -102,8 +100,14 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
   }
 
   function handleSkipped(jdId: string) {
+    // 持久化跳過：建立 status="dismissed" 的 application，重整後不再出現（也不會進求職追蹤看板）
     setSkippedIds((prev) => new Set([...prev, jdId]));
     setSelectedRec(null);
+    fetch("/api/applications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jdId, status: "dismissed" }),
+    }).catch(() => { /* handled by API */ });
   }
 
   return (
@@ -182,8 +186,6 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
             const salaryMin = parseSalaryMin(rec.jd.salaryRange);
             const salaryLabel = salaryMin > 0 ? `${salaryMin.toLocaleString()}+` : "面議";
             const active = rec.jd.recruitmentActivity?.includes("活躍") ?? false;
-            const isSaved = savedIds.has(rec.jd.id);
-
             return (
               <div
                 key={rec.id}
@@ -193,7 +195,6 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
                   borderLeft: `3px solid ${active ? "#1a1a18" : "#e8e4db"}`,
                   padding: "16px 20px", cursor: "pointer",
                   transition: "border-color 0.15s, box-shadow 0.15s",
-                  opacity: isSaved ? 0.6 : 1,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 8 }}>
@@ -203,7 +204,6 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, padding: "4px 12px", borderRadius: 8, background: "#f0ebe1", color: "#1a1a18" }}>{score}%</span>
-                    {isSaved && <span style={{ fontSize: 11, color: "#888", padding: "4px 10px", borderRadius: 8, border: "1px solid #e0dbd0" }}>已儲存</span>}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", fontSize: 12, color: "#888780" }}>

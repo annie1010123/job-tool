@@ -39,9 +39,18 @@ export default async function SavedPage() {
     },
   });
 
-  // Deduplicate: keep best score per jdId
+  // 排除「已處理過」的職缺：只要有 application（已投遞 / 已刪除跳過都算），就不再出現在找工作
+  // 邏輯：找工作 = 還沒處理的職缺；申請 → 進求職追蹤、刪除 → 跳過，兩者都從這裡消失（持久化）
+  const handledApps = await prisma.application.findMany({
+    where: { userId: session.user.id },
+    select: { jdId: true },
+  });
+  const handledJdIds = new Set(handledApps.map((a) => a.jdId));
+
+  // Deduplicate: keep best score per jdId；同時濾掉已處理的
   const seen = new Map<string, typeof allRecs[number]>();
   for (const rec of allRecs) {
+    if (handledJdIds.has(rec.jdId)) continue;
     const prev = seen.get(rec.jdId);
     if (!prev || rec.finalScore > prev.finalScore) seen.set(rec.jdId, rec);
   }
@@ -52,13 +61,6 @@ export default async function SavedPage() {
   const batchDateStr = latestBatch
     ? `${latestBatch.getMonth() + 1}/${latestBatch.getDate()}`
     : null;
-
-  // Get already-saved jdIds so we can mark them in the UI
-  const savedApps = await prisma.application.findMany({
-    where: { userId: session.user.id, isArchived: false },
-    select: { jdId: true },
-  });
-  const savedJdIds = savedApps.map((a) => a.jdId);
 
   return (
     <AppShell>
@@ -72,7 +74,6 @@ export default async function SavedPage() {
           intentRaw={intent.rawInput}
           keywords={intent.expandedKeywords as string[]}
           batchDateStr={batchDateStr}
-          savedJdIds={savedJdIds}
         />
       </div>
     </AppShell>
