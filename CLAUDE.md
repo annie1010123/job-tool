@@ -138,6 +138,8 @@ last-updated: 2026-06-09
 
 ## 相關文件
 
+- **`docs/FILE-MAP.md` — 功能 → 檔案對照地圖（改功能前先查這個，最快找到要開的檔）**
+- `docs/JobPilot-PRD-v4.0.html` — 最新 PRD（流程圖、ERD、API、Wireframe）
 - `TASKS.md` — 開發任務清單（Phase 分期 + 驗收標準）
 - `TICKETS.md` — 逐 ticket 明細
-- `JobPilot-Product-Spec-v1.0.pdf` — 完整產品規格文件
+- `docs/JobPilot-Product-Spec-v1.0.pdf` — 早期完整產品規格（作品集設計演進用）
