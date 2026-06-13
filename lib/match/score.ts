@@ -62,7 +62,7 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
 
   const keywords = intent.expandedKeywords as string[];
   // 角色關鍵字當「候選門票」（避免 PRD/Agile 等技能字把工程師撈進候選）；舊資料 fallback 全部
-  const roleKw = intent.roleKeywords as string[];
+  const roleKw = (intent.roleKeywords as string[] | null) ?? [];
   const gateKeywords = roleKw.length > 0 ? roleKw : keywords;
   const fetchN = topN * 3;
 
