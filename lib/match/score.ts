@@ -67,6 +67,9 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
   const recentCutoff = new Date();
   recentCutoff.setDate(recentCutoff.getDate() - 7);
 
+  // 只要實習：標題須含 實習 / intern / 工讀（seniority 欄位不可靠，用標題判斷）
+  const internClause = Prisma.sql`(j.title ILIKE '%實習%' OR j.title ILIKE '%intern%' OR j.title ILIKE '%工讀%')`;
+
   // Check if user has resume embedding
   const resumeEmb = await prisma.resumeEmbedding.findFirst({
     where: { resume: { userId } },
@@ -92,7 +95,7 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
       FROM "JdEmbedding" je
       JOIN "Jd" j ON j.id = je."jdId"
       CROSS JOIN (SELECT embedding FROM "IntentEmbedding" WHERE "intentId" = ${intent.id}) ie
-      WHERE j."crawledAt" >= ${recentCutoff} AND j."delistedAt" IS NULL AND (${orClause})
+      WHERE j."crawledAt" >= ${recentCutoff} AND j."delistedAt" IS NULL AND ${internClause} AND (${orClause})
       ORDER BY "intentScore" DESC
       LIMIT ${fetchN}
     `;
@@ -108,7 +111,7 @@ export async function matchForUser(userId: string, topN = 10): Promise<MatchResu
     FROM "JdEmbedding" je
     JOIN "Jd" j ON j.id = je."jdId"
     CROSS JOIN (SELECT embedding FROM "IntentEmbedding" WHERE "intentId" = ${intent.id}) ie
-    WHERE j."crawledAt" >= ${recentCutoff} AND j."delistedAt" IS NULL
+    WHERE j."crawledAt" >= ${recentCutoff} AND j."delistedAt" IS NULL AND ${internClause}
     ORDER BY "intentScore" DESC
     LIMIT ${fetchN}
   `;

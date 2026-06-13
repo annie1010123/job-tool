@@ -66,24 +66,39 @@ export async function GET(req: NextRequest) {
 
       // Diversity guardrail: max 1 JD per company
       const seen = new Set<string>();
-      const boostedMatches = allBoosted.filter((m) => {
+      const dedupedMatches = allBoosted.filter((m) => {
         const company = jdMap[m.jdId]?.companyName ?? "";
         if (seen.has(company)) return false;
         seen.add(company);
         return true;
-      }).slice(0, 10);
+      });
 
-      // Generate reasoning
+      // ── LLM 重排（精排）：對前 20 筆候選評 fitScore（職類適配度）+ 寫理由 ──
+      // embedding 負責召回（廣度），LLM 負責精準判斷職類相符（殺掉「沾邊但職類不同」的職缺）
+      const FIT_THRESHOLD = 5;
       const intentRaw = user.jobIntent?.rawInput ?? "";
+      const rerankPool = dedupedMatches.slice(0, 20);
       const reasons = await generateReasons(
         intentRaw,
-        boostedMatches.map((m) => {
+        rerankPool.map((m) => {
           const jd = jdMap[m.jdId]!;
           return { jdId: m.jdId, title: jd.title, companyName: jd.companyName,
                    skills: (jd.skills as string[]) ?? [], seniority: jd.seniority ?? null };
         })
       );
       const reasonMap = Object.fromEntries(reasons.map((r) => [r.jdId, r]));
+
+      // 過濾低適配 + 依 fitScore 重排（同分用 embedding finalScore），取 top 10
+      const boostedMatches = rerankPool
+        .filter((m) => (reasonMap[m.jdId]?.fitScore ?? 6) >= FIT_THRESHOLD)
+        .sort((a, b) => {
+          const fa = reasonMap[a.jdId]?.fitScore ?? 6;
+          const fb = reasonMap[b.jdId]?.fitScore ?? 6;
+          return fb !== fa ? fb - fa : b.finalScore - a.finalScore;
+        })
+        .slice(0, 10);
+
+      if (boostedMatches.length === 0) continue;
 
       // Save recommendations + create EmailLog for click tracking
       await prisma.recommendation.deleteMany({ where: { userId: user.id, dailyBatch: today } });
