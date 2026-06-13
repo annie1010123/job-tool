@@ -58,6 +58,13 @@ function formatCrawledDate(dateStr: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
+// postedAt 格式 "YYYY/MM/DD"；無法解析的排最後（回傳 0）
+function postedTime(postedAt: string | null): number {
+  if (!postedAt || !/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(postedAt)) return 0;
+  const t = new Date(postedAt.replace(/\//g, "-")).getTime();
+  return isNaN(t) ? 0 : t;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function FindJobPage({ recommendations, intentRaw, keywords, batchDateStr, savedJdIds }: Props) {
@@ -84,6 +91,7 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
     if (sort === "score") list.sort((a, b) => b.finalScore - a.finalScore);
     if (sort === "salary") list.sort((a, b) => parseSalaryMin(b.jd.salaryRange) - parseSalaryMin(a.jd.salaryRange));
     if (sort === "crawled") list.sort((a, b) => new Date(b.jd.crawledAt).getTime() - new Date(a.jd.crawledAt).getTime());
+    if (sort === "posted") list.sort((a, b) => postedTime(b.jd.postedAt) - postedTime(a.jd.postedAt));
     return list;
   }, [recommendations, search, scoreFilter, sort, skippedIds]);
 
@@ -147,6 +155,7 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
           style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e0dbd0", fontSize: 13, background: "#fff", cursor: "pointer" }}>
           <option value="score">依相符分數</option>
           <option value="salary">依薪資</option>
+          <option value="posted">依上架時間</option>
           <option value="crawled">依爬蟲日期</option>
         </select>
         <button onClick={() => setShowAddModal(true)}

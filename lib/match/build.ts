@@ -6,6 +6,16 @@ import { generateReasons } from "./reason";
 const FIT_THRESHOLD = 4;   // LLM 適配分門檻
 const MAX_RERANK = 30;     // 送 LLM 評分的上限（成本）
 const MAX_RESULTS = 30;    // 最終推薦數上限（不固定數量，夠格的都收）
+const POSTED_MAX_DAYS = 30; // 上架超過這天數的職缺不推薦（自動清久遠；postedAt 為空則保留）
+
+/** 判斷職缺上架是否超過 N 天。postedAt 格式 "YYYY/MM/DD"；無法解析（含 "null"）視為未知 → 不排除 */
+function isStalePosting(postedAt: string | null, maxDays: number): boolean {
+  if (!postedAt || !/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(postedAt)) return false;
+  const posted = new Date(postedAt.replace(/\//g, "-"));
+  if (isNaN(posted.getTime())) return false;
+  const ageDays = (Date.now() - posted.getTime()) / 86400000;
+  return ageDays > maxDays;
+}
 
 export interface BuiltJob {
   jdId: string;
@@ -68,6 +78,7 @@ export async function buildAndSaveRecommendations(
 
   const allBoosted = matches
     .filter((m) => !recentJdIds.has(m.jdId))
+    .filter((m) => !isStalePosting(jdMap[m.jdId]?.postedAt ?? null, POSTED_MAX_DAYS))
     .map((m) => {
       const jd = jdMap[m.jdId];
       const boost = recencyBoost(jd?.postedAt ?? null)

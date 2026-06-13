@@ -37,6 +37,8 @@ export interface DailyDigestProps {
   unchangedCount: number; // 仍在架無變動
   delistedCount: number;  // 已下架
   jobs: JobRow[];
+  totalCount?: number;    // 符合的總數（可能 > jobs.length，email 只列前幾筆）
+  appUrl?: string;        // 「查看全部」連結
 }
 
 function activityInfo(activity: string | null): { emoji: string; label: string; score: string } {
@@ -75,7 +77,11 @@ export function DailyDigest({
   unchangedCount,
   delistedCount,
   jobs,
+  totalCount,
+  appUrl,
 }: DailyDigestProps) {
+  const total = totalCount ?? jobs.length;
+  const hasMore = total > jobs.length;
   return (
     <Html lang="zh-TW">
       <Head />
@@ -114,7 +120,7 @@ export function DailyDigest({
           {/* Jobs Table */}
           <Section style={{ padding: "20px 28px" }}>
             <Text style={{ fontSize: "15px", fontWeight: 700, color: "#111827", margin: "0 0 14px" }}>
-              🆕 今日推薦職缺（{jobs.length} 筆）
+              🆕 今日推薦職缺（{hasMore ? `精選 ${jobs.length} / 共 ${total}` : `${jobs.length}`} 筆）
             </Text>
             <div style={{ overflowX: "auto" }}>
               <table style={{ borderCollapse: "collapse", width: "100%", minWidth: "700px" }}>
@@ -177,6 +183,16 @@ export function DailyDigest({
                 </tbody>
               </table>
             </div>
+            {hasMore && appUrl && (
+              <Text style={{ textAlign: "center", margin: "16px 0 0" }}>
+                <Link
+                  href={`${appUrl}/saved`}
+                  style={{ display: "inline-block", backgroundColor: "#18181b", color: "#ffffff", fontSize: "13px", fontWeight: 600, textDecoration: "none", padding: "10px 24px", borderRadius: "8px" }}
+                >
+                  查看全部 {total} 筆推薦 →
+                </Link>
+              </Text>
+            )}
           </Section>
 
           {/* Footer */}

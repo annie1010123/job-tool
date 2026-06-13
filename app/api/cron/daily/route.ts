@@ -60,6 +60,9 @@ export async function GET(req: NextRequest) {
       }));
       jobs.sort((a, b) => b.salaryMin - a.salaryMin || b.score - a.score);
 
+      // email 只放精選前 10 筆（避免轟炸），其餘導到網站看全部
+      const EMAIL_LIMIT = 10;
+
       await sendDailyDigest(user.email!, {
         date: dateStr,
         totalFetched: totalInDb,
@@ -69,7 +72,9 @@ export async function GET(req: NextRequest) {
         salaryChangedCount: 0,
         unchangedCount: totalInDb - newToday,
         delistedCount: 0,
-        jobs,
+        jobs: jobs.slice(0, EMAIL_LIMIT),
+        totalCount: jobs.length,
+        appUrl: baseUrl,
       });
 
       sent++;
