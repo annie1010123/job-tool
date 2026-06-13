@@ -68,7 +68,7 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
   const [selectedRec, setSelectedRec] = useState<Rec | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showIntentModal, setShowIntentModal] = useState(false);
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set(savedJdIds));
+  const savedIds = new Set(savedJdIds);
   const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
 
   const filteredRecs = useMemo(() => {
@@ -87,8 +87,8 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
     return list;
   }, [recommendations, search, scoreFilter, sort, skippedIds]);
 
-  function handleSaved(jdId: string) {
-    setSavedIds((prev) => new Set([...prev, jdId]));
+  function handleApplied(jdId: string) {
+    setSkippedIds((prev) => new Set([...prev, jdId]));
     setSelectedRec(null);
     router.refresh();
   }
@@ -222,9 +222,8 @@ export default function FindJobPage({ recommendations, intentRaw, keywords, batc
       {selectedRec && (
         <JobDetailModal
           rec={selectedRec}
-          isSaved={savedIds.has(selectedRec.jd.id)}
           onClose={() => setSelectedRec(null)}
-          onSaved={(jdId) => handleSaved(jdId)}
+          onApplied={(jdId) => handleApplied(jdId)}
           onSkipped={(jdId) => handleSkipped(jdId)}
         />
       )}

@@ -83,7 +83,6 @@ export default function DashboardHome({
   isToday,
 }: Props) {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [addingId, setAddingId] = useState<string | null>(null);
 
   const greeting = getGreeting();
   const totalActive =
@@ -92,16 +91,18 @@ export default function DashboardHome({
     (statMap["interviewing"] ?? 0) +
     (statMap["second_round"] ?? 0);
 
-  async function handleSave(jdId: string) {
-    if (savedIds.has(jdId) || addingId) return;
-    setAddingId(jdId);
-    await fetch("/api/applications", {
+  function handleSave(jdId: string) {
+    if (savedIds.has(jdId)) return;
+    // Optimistic UI: 立刻顯示已收藏，API 背景跑
+    setSavedIds((prev) => new Set([...prev, jdId]));
+    fetch("/api/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jdId, status: "watching" }),
+    }).catch(() => {
+      // 失敗則回滾
+      setSavedIds((prev) => { const n = new Set(prev); n.delete(jdId); return n; });
     });
-    setSavedIds((prev) => new Set([...prev, jdId]));
-    setAddingId(null);
   }
 
   return (
@@ -489,7 +490,7 @@ export default function DashboardHome({
                   </span>
                   <button
                     onClick={() => handleSave(rec.jd.id)}
-                    disabled={isSaved || addingId === rec.jd.id}
+                    disabled={isSaved}
                     style={{
                       fontSize: 12,
                       fontWeight: 500,
@@ -501,7 +502,7 @@ export default function DashboardHome({
                       cursor: isSaved ? "default" : "pointer",
                     }}
                   >
-                    {addingId === rec.jd.id ? "…" : isSaved ? "✓ 已收藏" : "收藏"}
+                    {isSaved ? "✓ 已收藏" : "收藏"}
                   </button>
                 </div>
               </div>

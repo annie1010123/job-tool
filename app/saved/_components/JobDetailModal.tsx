@@ -29,9 +29,8 @@ interface Rec {
 
 interface Props {
   rec: Rec;
-  isSaved: boolean;
   onClose: () => void;
-  onSaved: (jdId: string) => void;
+  onApplied: (jdId: string) => void;
   onSkipped: (jdId: string) => void;
 }
 
@@ -61,7 +60,7 @@ function parseSalaryLabel(s: string | null): string {
   return s;
 }
 
-export default function JobDetailModal({ rec, isSaved, onClose, onSaved, onSkipped }: Props) {
+export default function JobDetailModal({ rec, onClose, onApplied, onSkipped }: Props) {
   const { jd } = rec;
   const score = Math.round(rec.finalScore * 100);
   const skills = (jd.skills as string[]) ?? [];
@@ -76,9 +75,9 @@ export default function JobDetailModal({ rec, isSaved, onClose, onSaved, onSkipp
   const [lang, setLang] = useState<"zh" | "en">("zh");
   const [copied, setCopied] = useState(false);
 
-  // Save state
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(isSaved);
+  // Apply state
+  const [applied, setApplied] = useState(false);
+  const [showAppliedCard, setShowAppliedCard] = useState(false);
 
   // Close on Escape
   useEffect(() => {
@@ -106,24 +105,6 @@ export default function JobDetailModal({ rec, isSaved, onClose, onSaved, onSkipp
       setClError(e instanceof Error ? e.message : "生成失敗");
     } finally {
       setClLoading(false);
-    }
-  }
-
-  async function handleSave() {
-    if (saved || saving) return;
-    setSaving(true);
-    try {
-      const resp = await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jdId: jd.id, status: "not_applied", coverLetter: coverLetter || undefined }),
-      });
-      if (resp.ok) {
-        setSaved(true);
-        onSaved(jd.id);
-      }
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -368,9 +349,47 @@ export default function JobDetailModal({ rec, isSaved, onClose, onSaved, onSkipp
               >
                 {copied ? "已複製 ✓" : "複製"}
               </button>
+              <a
+                href={jd.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: "12px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                  background: "#fff", color: "#1a1a18", border: "1.5px solid #1a1a18",
+                  textDecoration: "none", whiteSpace: "nowrap",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+              >
+                前往投遞 ↗
+              </a>
             </div>
           </div>
         </div>
+
+        {/* Applied confirmation card */}
+        {showAppliedCard && (
+          <div style={{
+            position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 20, borderRadius: 16,
+          }}>
+            <div style={{
+              background: "#fff", borderRadius: 14, padding: "28px 56px",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
+              display: "flex", alignItems: "center", gap: 14,
+              animation: "cardPop 0.18s ease-out",
+            }}>
+              <span style={{
+                width: 36, height: 36, borderRadius: "50%", background: "#E1F5EE",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 18, color: "#0F6E56",
+              }}>✓</span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: "#1a1a18" }}>
+                已加入投遞追蹤！
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div style={{
@@ -379,17 +398,30 @@ export default function JobDetailModal({ rec, isSaved, onClose, onSaved, onSkipp
           background: "#faf9f6", flexShrink: 0,
         }}>
           <button
-            onClick={handleSave}
-            disabled={saved || saving}
+            onClick={() => {
+              if (applied) return;
+              // Optimistic UI: 立刻顯示卡片，API 背景跑
+              setApplied(true);
+              setShowAppliedCard(true);
+              fetch("/api/applications", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jdId: jd.id, status: "applied", coverLetter: coverLetter || undefined }),
+              }).catch(() => { /* handled by API */ });
+              setTimeout(() => {
+                onApplied(jd.id);
+              }, 800);
+            }}
+            disabled={applied}
             style={{
               padding: "10px 28px", borderRadius: 10, border: "none",
-              background: "#1a1a18", color: "#fff",
+              background: applied ? "#e8e6e1" : "#1a1a18",
+              color: applied ? "#888780" : "#fff",
               fontSize: 14, fontWeight: 600,
-              cursor: saved ? "default" : "pointer",
-              opacity: saving ? 0.6 : 1,
+              cursor: applied ? "default" : "pointer",
             }}
           >
-            {saving ? "申請中..." : "已申請"}
+            {applied ? "已申請職缺" : "申請職缺"}
           </button>
           <button
             onClick={() => onSkipped(jd.id)}
