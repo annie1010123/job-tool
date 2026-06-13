@@ -4,7 +4,7 @@ import { expandIntent } from "@/lib/intent/expand";
 import { embedText } from "@/lib/resume/embed";
 import { prisma } from "@/lib/db/client";
 import { sendPreviewEmail } from "@/lib/match/preview";
-import { matchForUser } from "@/lib/match/score";
+import { buildAndSaveRecommendations } from "@/lib/match/build";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -58,29 +58,12 @@ export async function POST(req: NextRequest) {
     console.error("Intent embedding failed (non-fatal):", e);
   }
 
-  // Fire-and-forget: refresh recommendations + preview email
+  // Fire-and-forget: 用與 cron 相同的管線重建推薦（含 LLM 精排），編輯意圖即時生效
+  // excludeRecentDays: 0 → 顯示全部相符（不排除近期，讓使用者改完馬上看到完整結果）
   const userEmail = session.user.email;
   Promise.all([
-    // Rebuild today's recommendation batch immediately
-    matchForUser(userId, 20).then(async (matches) => {
-      if (matches.length === 0) return;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      await prisma.recommendation.deleteMany({ where: { userId, dailyBatch: today } });
-      await prisma.recommendation.createMany({
-        data: matches.map((m) => ({
-          userId,
-          jdId: m.jdId,
-          resumeScore: m.resumeScore,
-          intentScore: m.intentScore,
-          finalScore: m.finalScore,
-          dailyBatch: today,
-        })),
-      });
-    }),
-    userEmail
-      ? sendPreviewEmail(userId, userEmail)
-      : Promise.resolve(),
+    buildAndSaveRecommendations(userId, rawInput.trim(), { excludeRecentDays: 0 }),
+    userEmail ? sendPreviewEmail(userId, userEmail) : Promise.resolve(),
   ]).catch((e) => console.error("Post-intent refresh failed (non-fatal):", e));
 
   return NextResponse.json({ success: true, expandedKeywords });
