@@ -497,8 +497,8 @@ def main():
 
     conn.close()
 
-    # ── Phase 6: 觸發 Vercel daily cron（match + 寄信）──
-    trigger_daily_cron()
+    # 寄信改由 Vercel cron 固定早上 8 點（UTC 00:00）執行，爬蟲不再立即觸發
+    # （避免清晨爬完就寄、與 8 點正式寄信重複）。trigger_daily_cron() 保留備用。
 
 
 def trigger_daily_cron():
