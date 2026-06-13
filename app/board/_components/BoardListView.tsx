@@ -9,17 +9,17 @@ export interface ListApp {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  not_applied: "未投遞", applied: "投遞中", interviewing: "面試中",
+  applied: "投遞中", interviewing: "面試中（一面）", second_round: "面試中（二面）",
   offer: "錄取 🎉", rejected: "感謝信",
 };
 const STATUS_BADGE: Record<string, string> = {
-  not_applied: "bg-zinc-100 text-zinc-500",
   applied:     "bg-blue-50 text-blue-700",
   interviewing:"bg-amber-50 text-amber-700",
+  second_round:"bg-amber-100 text-amber-800",
   offer:       "bg-green-50 text-green-700",
   rejected:    "bg-red-50 text-red-600",
 };
-const GROUP_ORDER = ["interviewing", "applied", "not_applied", "offer", "rejected"];
+const GROUP_ORDER = ["interviewing", "second_round", "applied", "offer", "rejected"];
 const GHOST_DAYS = 14;
 
 function daysSince(d: string | null) {

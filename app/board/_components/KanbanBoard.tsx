@@ -8,20 +8,19 @@ import ArchiveSection, { type ArchivedApp } from "./ArchiveSection";
 
 // 詳細頁狀態下拉用（5 個選項）
 export const STATUSES = [
-  { value: "not_applied",  label: "未投遞",         dot: "bg-zinc-400" },
   { value: "applied",      label: "投遞中",         dot: "bg-blue-500" },
-  { value: "interviewing", label: "面試中",         dot: "bg-amber-500" },
+  { value: "interviewing", label: "面試中（一面）",  dot: "bg-amber-500" },
+  { value: "second_round", label: "面試中（二面）",  dot: "bg-amber-600" },
   { value: "offer",        label: "錄取 🎉",        dot: "bg-green-500" },
   { value: "rejected",     label: "感謝信（被刷）",  dot: "bg-red-400" },
 ] as const;
 
 export type AppStatus = (typeof STATUSES)[number]["value"];
 
-// 看板 4 欄（結果欄含 offer + rejected）
+// 看板 3 欄：投遞中 → 面試中（含一面/二面）→ 結果（錄取 + 感謝信）
 export const KANBAN_COLUMNS = [
-  { value: "not_applied",  label: "未投遞", dot: "bg-zinc-400", colBg: "bg-zinc-50",      statuses: ["not_applied"] as string[] },
   { value: "applied",      label: "投遞中", dot: "bg-blue-500", colBg: "bg-blue-50/40",   statuses: ["applied"] as string[] },
-  { value: "interviewing", label: "面試中", dot: "bg-amber-500",colBg: "bg-amber-50/40",  statuses: ["interviewing"] as string[] },
+  { value: "interviewing", label: "面試中", dot: "bg-amber-500",colBg: "bg-amber-50/40",  statuses: ["interviewing", "second_round"] as string[] },
   { value: "result",       label: "結果",   dot: "bg-green-500",colBg: "bg-green-50/40",  statuses: ["offer", "rejected"] as string[] },
 ] as const;
 
@@ -122,7 +121,7 @@ function AddJobModal({ onClose, onAdded }: { onClose: () => void; onAdded: (app:
     const resp = await fetch("/api/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ companyName, jobTitle, sourceUrl: sourceUrl || undefined, jdContent: jdContent || undefined, companyType: companyType || undefined }),
+      body: JSON.stringify({ companyName, jobTitle, sourceUrl: sourceUrl || undefined, jdContent: jdContent || undefined, companyType: companyType || undefined, status: "applied" }),
     });
     if (!resp.ok) {
       setError("新增失敗，請再試一次");

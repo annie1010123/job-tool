@@ -69,7 +69,7 @@ export default function AddJobModal({
           jobTitle: jobTitle.trim(),
           sourceUrl: parseUrl.trim() || undefined,
           companyType: companyType || null,
-          status: "watching",
+          status: "applied",
         }),
       });
       if (!resp.ok) {

@@ -13,7 +13,12 @@ export default async function BoardPage() {
 
   const [applications, archivedApplications] = await Promise.all([
     prisma.application.findMany({
-      where: { userId: session.user.id, isArchived: false },
+      // 求職追蹤只顯示「投遞流程」：投遞中→面試中（一/二面）→ 結果（錄取/感謝信）
+      // 不含 not_applied / watching（收藏未投遞，不屬於追蹤）
+      where: {
+        userId: session.user.id, isArchived: false,
+        status: { in: ["applied", "interviewing", "second_round", "offer", "rejected"] },
+      },
       include: {
         jd: { select: { id: true, title: true, companyName: true, externalUrl: true, postedAt: true } },
         interviewRecords: true,
