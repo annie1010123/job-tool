@@ -36,7 +36,14 @@ export default async function DashboardPage() {
     prisma.recommendation.findMany({
       where: { userId: session.user.id, dailyBatch: { gte: threeDaysAgo } },
       orderBy: { finalScore: "desc" },
-      include: { jd: true },
+      // 只取 dashboard 需要的欄位（不抓 jd.description 等大欄位，避免 90 筆 ×長文拖慢 ~3s→~0.6s）
+      select: {
+        id: true,
+        jdId: true,
+        finalScore: true,
+        dailyBatch: true,
+        jd: { select: { id: true, title: true, companyName: true, externalUrl: true } },
+      },
     }),
     prisma.application.groupBy({
       by: ["status"],
