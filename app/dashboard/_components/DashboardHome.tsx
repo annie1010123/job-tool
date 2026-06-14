@@ -104,7 +104,7 @@ export default function DashboardHome({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
+          gridTemplateColumns: `repeat(${STATUS_CONFIG.length}, 1fr)`,
           gap: 1,
           background: "rgba(0,0,0,0.06)",
           borderRadius: 14,
