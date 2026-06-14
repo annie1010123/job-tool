@@ -1,5 +1,4 @@
 import Link from "next/link";
-import CoverLetterTryIt from "./_components/CoverLetterTryIt";
 
 /* ── 小圖示（SVG，不用 emoji 當結構圖示）── */
 function Check({ className = "" }: { className?: string }) {
@@ -197,31 +196,39 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── 免費試玩 ── */}
-      <section className="mx-auto max-w-2xl px-5 py-16 text-center sm:px-8 lg:py-24">
-        <p className="text-xs font-semibold uppercase tracking-widest text-[#888780]">不用註冊，先試試</p>
-        <h2 className="mt-3 text-[1.8rem] font-bold tracking-tight sm:text-[2.2rem]">30 秒體驗 AI 推薦信</h2>
-        <p className="mt-3 text-[15px] leading-7 text-[#5f5e5a]">貼上任何職缺描述，AI 立即幫你生成一封推薦信草稿。</p>
-        <div className="mt-8 text-left">
-          <CoverLetterTryIt />
-        </div>
-      </section>
-
-      {/* ── 最終 CTA ── */}
-      <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
-        <div className="rounded-3xl bg-[#1a1a18] px-8 py-14 text-center text-white sm:py-16">
-          <h2 className="mx-auto max-w-xl text-[1.8rem] font-bold leading-snug tracking-tight sm:text-[2.2rem]">
-            讓 AI 當你的求職教練，從今天開始。
+      {/* ── 最終 CTA（綠色卡片）── */}
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:py-24">
+        <div className="rounded-[28px] bg-[#dff0e6] px-6 py-14 text-center sm:px-8 sm:py-20">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#0f6e56]/15 bg-white px-3.5 py-1.5 text-xs font-medium text-[#0f6e56]">
+            求職路上，有 AI 罩你
+          </span>
+          <h2 className="mx-auto mt-6 max-w-2xl text-[2rem] font-bold leading-tight tracking-tight text-[#16261f] sm:text-[2.8rem]">
+            別再一個人埋頭找工作。
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-[15px] leading-7 text-white/70">
-            免費註冊，30 秒設定好，明天早上 8 點就收到第一批為你挑的職缺。
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-7 text-[#3d4a44] sm:text-base">
+            讓 JobPilot 幫你挑職缺、追進度、練面試，把時間留給真正重要的事——準備面試，拿下 Offer。
           </p>
-          <Link
-            href="/login"
-            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-[#1a1a18] transition-transform hover:scale-[1.02]"
-          >
-            免費開始求職 <Arrow />
-          </Link>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#1a1a18] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#333]"
+            >
+              免費開始求職 <Arrow />
+            </Link>
+            <a
+              href="#how"
+              className="inline-flex items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[#1a1a18] transition-transform hover:scale-[1.02]"
+            >
+              了解更多功能
+            </a>
+          </div>
+          <ul className="mt-7 flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-[13px] text-[#5a6b63]">
+            {["永久免費方案", "不需信用卡", "30 秒上手"].map((t) => (
+              <li key={t} className="inline-flex items-center gap-1.5">
+                <Check className="text-[#0f6e56]" /> {t}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
