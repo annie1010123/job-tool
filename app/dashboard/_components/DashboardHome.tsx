@@ -17,7 +17,7 @@ interface Rec {
 
 interface TodoItem {
   id: string;
-  type: "not_applied" | "needs_prep" | "new_recs";
+  type: "ghosted" | "needs_prep" | "new_recs";
   label: string;
   actionLabel: string;
   actionHref: string;
@@ -25,7 +25,7 @@ interface TodoItem {
 
 interface TimelineItem {
   id: string;
-  type: "save" | "apply" | "interview" | "status";
+  type: "apply" | "interview" | "status";
   text: string;
   time: string;
 }
@@ -43,7 +43,6 @@ interface Props {
 }
 
 const STATUS_CONFIG = [
-  { value: "watching", label: "未投遞", color: "#888888" },
   { value: "applied", label: "投遞中", color: "#2563eb" },
   { value: "interviewing", label: "面試中", color: "#ea580c" },
   { value: "second_round", label: "二面", color: "#dc2626" },
@@ -51,13 +50,12 @@ const STATUS_CONFIG = [
 ];
 
 const TODO_COLORS: Record<string, string> = {
-  not_applied: "#ef4444",
+  ghosted: "#ea580c",
   needs_prep: "#f59e0b",
   new_recs: "#3b82f6",
 };
 
 const TIMELINE_ICONS: Record<string, { bg: string; emoji: string }> = {
-  save: { bg: "#dbeafe", emoji: "🔖" },
   apply: { bg: "#dcfce7", emoji: "📤" },
   interview: { bg: "#fef3c7", emoji: "🎤" },
   status: { bg: "#f3e8ff", emoji: "📋" },
@@ -84,7 +82,6 @@ export default function DashboardHome({
 
   const greeting = getGreeting();
   const totalActive =
-    (statMap["watching"] ?? 0) +
     (statMap["applied"] ?? 0) +
     (statMap["interviewing"] ?? 0) +
     (statMap["second_round"] ?? 0);

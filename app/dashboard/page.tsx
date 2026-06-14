@@ -32,7 +32,7 @@ export default async function DashboardPage() {
   const threeDaysAgo = new Date(today);
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-  const [allRecs, statsRaw, watchingApps, interviewingApps, recentApps] = await Promise.all([
+  const [allRecs, statsRaw, appliedApps, interviewingApps, recentApps] = await Promise.all([
     prisma.recommendation.findMany({
       where: { userId: session.user.id, dailyBatch: { gte: threeDaysAgo } },
       orderBy: { finalScore: "desc" },
@@ -51,10 +51,10 @@ export default async function DashboardPage() {
       _count: { status: true },
     }),
     prisma.application.findMany({
-      where: { userId: session.user.id, status: "watching", isArchived: false },
+      where: { userId: session.user.id, status: "applied", isArchived: false },
       include: { jd: { select: { companyName: true, title: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
+      orderBy: { appliedAt: "asc" },
+      take: 20,
     }),
     prisma.application.findMany({
       where: { userId: session.user.id, status: "interviewing", isArchived: false },
@@ -87,14 +87,22 @@ export default async function DashboardPage() {
     : null;
 
   // Build todos
-  const todos: { id: string; type: "not_applied" | "needs_prep" | "new_recs"; label: string; actionLabel: string; actionHref: string }[] = [];
+  const todos: { id: string; type: "ghosted" | "needs_prep" | "new_recs"; label: string; actionLabel: string; actionHref: string }[] = [];
 
-  for (const app of watchingApps.slice(0, 2)) {
+  // 久沒回音：已投遞超過 14 天還沒進展 → 提示追問或封存
+  const GHOST_DAYS = 14;
+  const now = Date.now();
+  const ghosted = appliedApps.filter((app) => {
+    const since = app.appliedAt ?? app.createdAt;
+    return (now - new Date(since).getTime()) / 86400000 >= GHOST_DAYS;
+  });
+  for (const app of ghosted.slice(0, 2)) {
+    const days = Math.floor((now - new Date(app.appliedAt ?? app.createdAt).getTime()) / 86400000);
     todos.push({
-      id: `todo-watch-${app.id}`,
-      type: "not_applied",
-      label: `${app.jd.companyName} — 還沒投遞`,
-      actionLabel: "去投遞",
+      id: `todo-ghost-${app.id}`,
+      type: "ghosted",
+      label: `${app.jd.companyName} — 久沒回音（${days} 天）`,
+      actionLabel: "追問或封存",
       actionHref: `/board/${app.id}`,
     });
   }
@@ -120,18 +128,11 @@ export default async function DashboardPage() {
   }
 
   // Build timeline
-  const timeline: { id: string; type: "save" | "apply" | "interview" | "status"; text: string; time: string }[] = [];
+  const timeline: { id: string; type: "apply" | "interview" | "status"; text: string; time: string }[] = [];
 
   for (const app of recentApps.slice(0, 4)) {
     const timeStr = formatRelativeTime(app.updatedAt);
-    if (app.status === "watching") {
-      timeline.push({
-        id: `tl-${app.id}`,
-        type: "save",
-        text: `收藏了「${app.jd.title}」— ${app.jd.companyName}`,
-        time: timeStr,
-      });
-    } else if (app.status === "applied") {
+    if (app.status === "applied") {
       timeline.push({
         id: `tl-${app.id}`,
         type: "apply",

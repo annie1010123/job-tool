@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (existing) {
-    const statusRank: Record<string, number> = { not_applied: 0, watching: 1, applied: 2, interviewing: 3, offered: 4, rejected: 5 };
+    const statusRank: Record<string, number> = { dismissed: 0, not_applied: 0, applied: 2, interviewing: 3, second_round: 4, offer: 5, rejected: 6 };
     const currentRank = statusRank[existing.status] ?? 0;
     const newRank = statusRank[body.status] ?? 0;
     if (newRank > currentRank) {
