@@ -165,6 +165,16 @@ def fetch_job_detail(job_url: str, hr_score: float = 0.0) -> dict | None:
         header  = d.get("header", {})
         if not header.get("jobName") or not header.get("custName"):
             return None
+        # 已關閉/停止招募的職缺：104 頁面還在但 switch="off"，或 closeDate 已過期 → 視為下架，不收
+        if d.get("switch") != "on":
+            return None
+        close_date = d.get("closeDate") or ""
+        if close_date:
+            try:
+                if datetime.strptime(close_date[:10], "%Y-%m-%d").date() < datetime.now().date():
+                    return None
+            except ValueError:
+                pass
         detail    = d.get("jobDetail", {})
         contact   = d.get("contact", {})
         condition = d.get("condition", {})
