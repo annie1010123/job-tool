@@ -80,6 +80,10 @@ export default async function DashboardPage() {
     .sort((a, b) => b.finalScore - a.finalScore);
 
   const statMap = Object.fromEntries(statsRaw.map((s) => [s.status, s._count.status]));
+  // 累計投遞總數（含已封存，凡是進過投遞流程的都算）
+  const totalApplied = await prisma.application.count({
+    where: { userId: session.user.id, status: { in: ["applied", "interviewing", "second_round", "offer", "rejected"] } },
+  });
   const isToday = allRecs.some((r) => r.dailyBatch >= today);
   const latestBatch = allRecs[0]?.dailyBatch ?? null;
   const batchDateStr = latestBatch
@@ -172,6 +176,7 @@ export default async function DashboardPage() {
       <DashboardHome
         userName={session.user.name ?? null}
         statMap={statMap}
+        totalApplied={totalApplied}
         intentRaw={intent.rawInput}
         todos={todos}
         timeline={timeline}

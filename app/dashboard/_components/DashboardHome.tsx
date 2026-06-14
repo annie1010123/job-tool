@@ -33,6 +33,7 @@ interface TimelineItem {
 interface Props {
   userName: string | null;
   statMap: Record<string, number>;
+  totalApplied: number;
   intentRaw: string;
   todos: TodoItem[];
   timeline: TimelineItem[];
@@ -46,7 +47,8 @@ const STATUS_CONFIG = [
   { value: "applied", label: "投遞中", color: "#2563eb" },
   { value: "interviewing", label: "面試中", color: "#ea580c" },
   { value: "second_round", label: "二面", color: "#dc2626" },
-  { value: "result", label: "結果", color: "#16a34a" },
+  { value: "offer", label: "錄取 🎉", color: "#16a34a" },
+  { value: "rejected", label: "感謝信", color: "#999791" },
 ];
 
 const TODO_COLORS: Record<string, string> = {
@@ -71,6 +73,7 @@ function getGreeting(): string {
 export default function DashboardHome({
   userName: _userName,
   statMap,
+  totalApplied,
   intentRaw,
   todos,
   timeline,
@@ -81,10 +84,6 @@ export default function DashboardHome({
 }: Props) {
 
   const greeting = getGreeting();
-  const totalActive =
-    (statMap["applied"] ?? 0) +
-    (statMap["interviewing"] ?? 0) +
-    (statMap["second_round"] ?? 0);
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px" }}>
@@ -94,8 +93,8 @@ export default function DashboardHome({
           {greeting} 👋
         </h1>
         <p style={{ fontSize: 13, color: "#888780" }}>
-          {totalActive > 0
-            ? `你有 ${todos.length} 個待處理事項，${statMap["applied"] ?? 0} 個職缺投遞中`
+          {totalApplied > 0
+            ? `你有 ${todos.length} 個待處理事項 · 累計投遞 ${totalApplied} 間`
             : "開始你的求職之旅吧"}
         </p>
       </div>
