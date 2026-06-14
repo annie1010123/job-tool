@@ -1,58 +1,236 @@
+import Link from "next/link";
 import CoverLetterTryIt from "./_components/CoverLetterTryIt";
 
-export default async function Home() {
-
-  const features = [
-    { icon: "🎯", title: "AI 語意推薦", desc: "不是關鍵字匹配，是理解你的履歷和求職意圖，每天推薦最 match 的職缺" },
-    { icon: "✉️", title: "一鍵推薦信", desc: "根據你的履歷和 JD 自動生成客製化推薦信，3 種語氣任選" },
-    { icon: "🧠", title: "面試 AI 進化", desc: "每次面試後 AI 復盤，題庫自動進化，下次準備更精準" },
-    { icon: "📋", title: "全流程追蹤", desc: "從收藏到投遞到面試，Kanban 看板統一管理所有進度" },
-  ];
-
+/* ── 小圖示（SVG，不用 emoji 當結構圖示）── */
+function Check({ className = "" }: { className?: string }) {
   return (
-    <div className="min-h-screen" style={{ background: "#f1efe8" }}>
-      {/* Nav */}
-      <header style={{ maxWidth: 720, margin: "0 auto", padding: "24px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: 600, fontSize: 16, color: "#1a1a18", letterSpacing: "-0.02em" }}>JobPilot</span>
-        <a href="/login" style={{ fontSize: 13, color: "#888780", textDecoration: "none" }}>登入</a>
+    <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden width="16" height="16">
+      <path d="M4 10.5l3.5 3.5L16 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function Arrow({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden width="16" height="16">
+      <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const PAINS = [
+  "104 滑不完，不知道哪些職缺真的適合自己",
+  "投了十幾間，記不住投到哪、誰回了、該追誰",
+  "面試前才臨時抱佛腳，上一次的經驗沒留下來",
+];
+
+const STEPS = [
+  {
+    no: "01",
+    tag: "讀懂你",
+    title: "上傳履歷 + 設定求職意圖",
+    desc: "AI 用語意理解你的背景與目標，不是死板的關鍵字比對——所以推薦的是「真的適合」，不是「字面上有」。",
+  },
+  {
+    no: "02",
+    tag: "每天幫你挑",
+    title: "每天收到 AI 推薦職缺 + 一鍵推薦信",
+    desc: "每天自動從 104 篩出最 match 的職缺，附上相符度與推薦理由；想投的話，一鍵生成客製化推薦信。",
+  },
+  {
+    no: "03",
+    tag: "陪你到面試",
+    title: "全程追蹤 + AI 面試準備越練越強",
+    desc: "從投遞、面試到結果一個看板管好；面試前 AI 根據職缺與你的歷史出題，每練一次就更準。",
+  },
+];
+
+export default async function Home() {
+  return (
+    <div className="min-h-dvh bg-[#f4f2ec] text-[#1a1a18] antialiased">
+      {/* ── Nav ── */}
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+        <span className="text-[17px] font-bold tracking-tight">JobPilot</span>
+        <nav className="flex items-center gap-2 sm:gap-4">
+          <Link href="/login" className="rounded-lg px-3 py-2 text-sm text-[#5f5e5a] transition-colors hover:text-[#1a1a18]">
+            登入
+          </Link>
+          <Link
+            href="/login"
+            className="rounded-lg bg-[#1a1a18] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#333]"
+          >
+            免費開始
+          </Link>
+        </nav>
       </header>
 
-      {/* Hero */}
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 16px 60px", textAlign: "center" }}>
-        <h1 style={{ fontSize: 32, fontWeight: 600, color: "#1a1a18", lineHeight: 1.3, letterSpacing: "-0.02em", marginBottom: 12 }}>
-          你的 AI 求職教練
+      {/* ── Hero ── */}
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:pb-24 lg:pt-14">
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-medium text-[#5f5e5a]">
+            為求職的學生與新鮮人打造
+          </span>
+          <h1 className="mt-5 text-[2.4rem] font-bold leading-[1.15] tracking-tight sm:text-[3.1rem]">
+            每天 AI 幫你挑好職缺，
+            <br className="hidden sm:block" />
+            <span className="text-[#0f6e56]">面試越練越強。</span>
+          </h1>
+          <p className="mt-5 max-w-xl text-[15px] leading-7 text-[#5f5e5a] sm:text-base">
+            別再自己滑 104 滑到眼花。JobPilot 讀懂你的履歷與求職意圖，每天語意推薦最適合的職缺、一鍵生成推薦信，
+            再從投遞到面試全程陪跑——像有個求職教練隨時在旁邊。
+          </p>
+
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#1a1a18] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#333]"
+            >
+              免費開始求職 <Arrow />
+            </Link>
+            <a
+              href="#how"
+              className="inline-flex items-center rounded-xl border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-[#1a1a18] transition-colors hover:border-black/30"
+            >
+              看 JobPilot 怎麼運作
+            </a>
+          </div>
+
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[#888780]">
+            {["永久免費方案", "不需信用卡", "30 秒上手"].map((t) => (
+              <li key={t} className="inline-flex items-center gap-1.5">
+                <Check className="text-[#0f6e56]" /> {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 產品 mockup：推薦職缺卡片 */}
+        <div className="relative">
+          <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.25)]">
+            <div className="flex items-center justify-between text-xs text-[#888780]">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block h-2 w-2 rounded-full bg-[#0f6e56]" /> 今日推薦
+              </span>
+              <span>1 / 12</span>
+            </div>
+            <div className="mt-4 flex items-start justify-between gap-3">
+              <div>
+                <div className="text-[15px] font-semibold leading-snug">產品經理實習生 Product Manager Intern</div>
+                <div className="mt-1 text-[13px] text-[#5f5e5a]">行動貝果有限公司 · 台北市信義區</div>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-full bg-[#E1F5EE] text-[#0f6e56]">
+                <span className="text-sm font-bold leading-none">92%</span>
+                <span className="text-[9px] leading-none">相符</span>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {["PRD", "需求分析", "Agile", "跨部門溝通"].map((s) => (
+                <span key={s} className="rounded-md bg-[#f0efe9] px-2.5 py-1 text-[11px] text-[#5f5e5a]">
+                  {s}
+                </span>
+              ))}
+            </div>
+            <div className="mt-4 rounded-xl bg-[#faf9f6] p-3 text-[12.5px] leading-6 text-[#5f5e5a]">
+              <span className="font-semibold text-[#1a1a18]">AI 推薦理由 ·</span>{" "}
+              職務聚焦產品規格與跨部門協作，與你「想做 0→1 產品」的意圖高度吻合，技能也對得上。
+            </div>
+            <div className="mt-4 flex gap-2.5">
+              <button className="flex-1 rounded-xl border border-black/12 bg-white py-2.5 text-sm font-medium text-[#888780]">
+                略過
+              </button>
+              <button className="flex-1 rounded-xl bg-[#0f6e56] py-2.5 text-sm font-semibold text-white">
+                投遞
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 來源列 ── */}
+      <section className="border-y border-black/5 bg-[#faf9f6]">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-5 py-4 text-[13px] text-[#888780] sm:px-8">
+          <span>每天自動從</span>
+          <span className="rounded-md bg-[#E1F5EE] px-2 py-0.5 text-xs font-semibold text-[#0f6e56]">104 人力銀行</span>
+          <span>為你更新職缺，用 AI 語意比對你的履歷與意圖。</span>
+        </div>
+      </section>
+
+      {/* ── 痛點 ── */}
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#888780]">為什麼需要 JobPilot</p>
+        <h2 className="mt-3 max-w-2xl text-[1.8rem] font-bold leading-snug tracking-tight sm:text-[2.2rem]">
+          找工作本來就很累，
           <br />
-          每一次面試都讓你更強
-        </h1>
-        <p style={{ fontSize: 16, color: "#5f5e5a", lineHeight: 1.7, marginBottom: 32, maxWidth: 480, margin: "0 auto 32px" }}>
-          從語意推薦、推薦信生成，到面試 AI 復盤——JobPilot 記得你的每一次經驗，讓求職從體力活變成策略活。
-        </p>
-
-        <a href="/login" style={{ display: "inline-block", padding: "12px 32px", borderRadius: 10, background: "#1a1a18", color: "#fff", fontSize: 14, fontWeight: 500, textDecoration: "none", marginBottom: 48 }}>
-          免費開始使用
-        </a>
-
-        {/* Feature cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 48, textAlign: "left" }}>
-          {features.map((f) => (
-            <div key={f.title} style={{ background: "#fff", border: "0.5px solid rgba(0,0,0,0.1)", borderRadius: 12, padding: 20 }}>
-              <div style={{ fontSize: 20, marginBottom: 8 }}>{f.icon}</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "#1a1a18", marginBottom: 4 }}>{f.title}</div>
-              <div style={{ fontSize: 12, color: "#888780", lineHeight: 1.6 }}>{f.desc}</div>
+          不該再累在這些事上。
+        </h2>
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {PAINS.map((p, i) => (
+            <div key={i} className="rounded-2xl border border-black/8 bg-white p-6">
+              <span className="text-sm font-semibold text-[#D85A30]">0{i + 1}</span>
+              <p className="mt-3 text-[15px] leading-7 text-[#3d3d3a]">{p}</p>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Try it section */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: "#1a1a18", marginBottom: 4 }}>30 秒體驗</h2>
-          <p style={{ fontSize: 13, color: "#888780", marginBottom: 20 }}>貼上任何職缺描述，AI 立即幫你生成推薦信</p>
+      {/* ── 三步驟 ── */}
+      <section id="how" className="scroll-mt-8 bg-[#faf9f6] py-16 lg:py-24">
+        <div className="mx-auto max-w-6xl px-5 text-center sm:px-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#888780]">JobPilot 怎麼運作</p>
+          <h2 className="mx-auto mt-3 max-w-2xl text-[1.9rem] font-bold leading-snug tracking-tight sm:text-[2.4rem]">
+            三步驟，搞定整段求職
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-[15px] leading-7 text-[#5f5e5a]">
+            從找職缺、投遞到面試準備，每一步都讓 AI 幫你省力。
+          </p>
+        </div>
+        <div className="mx-auto mt-12 grid max-w-6xl gap-5 px-5 sm:px-8 lg:grid-cols-3">
+          {STEPS.map((s) => (
+            <div key={s.no} className="rounded-2xl border border-black/8 bg-white p-7">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold text-[#1a1a18]">{s.no}</span>
+                <span className="rounded-full bg-[#f0efe9] px-2.5 py-1 text-xs font-medium text-[#5f5e5a]">{s.tag}</span>
+              </div>
+              <h3 className="mt-4 text-[17px] font-semibold leading-snug">{s.title}</h3>
+              <p className="mt-2.5 text-[14px] leading-7 text-[#5f5e5a]">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 免費試玩 ── */}
+      <section className="mx-auto max-w-2xl px-5 py-16 text-center sm:px-8 lg:py-24">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#888780]">不用註冊，先試試</p>
+        <h2 className="mt-3 text-[1.8rem] font-bold tracking-tight sm:text-[2.2rem]">30 秒體驗 AI 推薦信</h2>
+        <p className="mt-3 text-[15px] leading-7 text-[#5f5e5a]">貼上任何職缺描述，AI 立即幫你生成一封推薦信草稿。</p>
+        <div className="mt-8 text-left">
           <CoverLetterTryIt />
         </div>
-      </main>
+      </section>
 
-      <footer style={{ textAlign: "center", fontSize: 12, color: "#c8c7c2", padding: "32px 16px" }}>
-        © 2026 JobPilot · AI 求職教練
+      {/* ── 最終 CTA ── */}
+      <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
+        <div className="rounded-3xl bg-[#1a1a18] px-8 py-14 text-center text-white sm:py-16">
+          <h2 className="mx-auto max-w-xl text-[1.8rem] font-bold leading-snug tracking-tight sm:text-[2.2rem]">
+            讓 AI 當你的求職教練，從今天開始。
+          </h2>
+          <p className="mx-auto mt-4 max-w-lg text-[15px] leading-7 text-white/70">
+            免費註冊，30 秒設定好，明天早上 8 點就收到第一批為你挑的職缺。
+          </p>
+          <Link
+            href="/login"
+            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 text-sm font-semibold text-[#1a1a18] transition-transform hover:scale-[1.02]"
+          >
+            免費開始求職 <Arrow />
+          </Link>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-black/5">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-[13px] text-[#888780] sm:flex-row sm:px-8">
+          <span className="font-semibold text-[#5f5e5a]">JobPilot</span>
+          <span>© 2026 JobPilot · 你的 AI 求職教練 · 資料來源：104 人力銀行</span>
+        </div>
       </footer>
     </div>
   );
