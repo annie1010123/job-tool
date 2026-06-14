@@ -6,6 +6,7 @@ import ExperienceForm from "./ExperienceForm";
 
 export interface WorkExp {
   id: string;
+  type?: string;
   company: string;
   role: string;
   startDate: string | null;

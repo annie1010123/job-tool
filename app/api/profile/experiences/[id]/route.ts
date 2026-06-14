@@ -13,6 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const body = await req.json() as {
+    type?: string;
     company?: string;
     role?: string;
     startDate?: string;
@@ -25,6 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const updated = await prisma.workExperience.update({
     where: { id },
     data: {
+      ...(body.type !== undefined && { type: body.type.trim() || "工作" }),
       ...(body.company !== undefined && { company: body.company.trim() }),
       ...(body.role !== undefined && { role: body.role.trim() }),
       ...(body.startDate !== undefined && { startDate: body.startDate.trim() || null }),

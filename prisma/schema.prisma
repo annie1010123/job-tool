@@ -250,6 +250,7 @@ model InterviewReview {
 model WorkExperience {
   id          String   @id @default(cuid())
   userId      String
+  type        String   @default("工作") // 工作/實習/專案/社團/競賽/課程 — 同時支援出社會者與學生
   company     String
   role        String
   startDate   String?

@@ -28,6 +28,9 @@ export default function ExperienceCard({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+            {exp.type && exp.type !== "工作" && (
+              <span style={{ fontSize: 11, fontWeight: 500, color: "#0f6e56", background: "#E1F5EE", borderRadius: 6, padding: "2px 8px", alignSelf: "center" }}>{exp.type}</span>
+            )}
             <span style={{ fontSize: 15, fontWeight: 600, color: "#1a1a18" }}>{exp.company}</span>
             <span style={{ fontSize: 13, color: "#555552" }}>{exp.role}</span>
           </div>

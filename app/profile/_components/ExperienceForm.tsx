@@ -9,7 +9,10 @@ interface Props {
   onCancel: () => void;
 }
 
+const EXP_TYPES = ["工作", "實習", "專案", "社團", "競賽", "課程"];
+
 export default function ExperienceForm({ initial, onSave, onCancel }: Props) {
+  const [type, setType] = useState(initial?.type ?? "工作");
   const [company, setCompany] = useState(initial?.company ?? "");
   const [role, setRole] = useState(initial?.role ?? "");
   const [startDate, setStartDate] = useState(initial?.startDate ?? "");
@@ -29,7 +32,7 @@ export default function ExperienceForm({ initial, onSave, onCancel }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!company.trim() || !role.trim() || !description.trim()) {
-      setError("公司名稱、職稱和工作描述為必填");
+      setError("名稱、角色和描述為必填");
       return;
     }
     setSaving(true);
@@ -40,7 +43,7 @@ export default function ExperienceForm({ initial, onSave, onCancel }: Props) {
       const resp = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company, role, startDate, endDate, description, skills }),
+        body: JSON.stringify({ type, company, role, startDate, endDate, description, skills }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({})) as { error?: string };
@@ -68,14 +71,34 @@ export default function ExperienceForm({ initial, onSave, onCancel }: Props) {
         {initial ? "編輯經歷" : "新增工作經歷"}
       </p>
       <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: 12 }}>
+          <label style={labelStyle}>類型</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {EXP_TYPES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setType(t)}
+                style={{
+                  fontSize: 12, padding: "6px 14px", borderRadius: 8, cursor: "pointer",
+                  border: type === t ? "1px solid #1a1a18" : "0.5px solid rgba(0,0,0,0.2)",
+                  background: type === t ? "#1a1a18" : "#fff",
+                  color: type === t ? "#fff" : "#5f5e5a",
+                }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div>
-            <label style={labelStyle}>公司名稱 *</label>
-            <input style={inputStyle} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="例：Tripmate" />
+            <label style={labelStyle}>公司 / 組織 / 專案名稱 *</label>
+            <input style={inputStyle} value={company} onChange={(e) => setCompany(e.target.value)} placeholder={type === "專案" ? "例：校園二手交易平台" : "例：Tripmate"} />
           </div>
           <div>
-            <label style={labelStyle}>職稱 *</label>
-            <input style={inputStyle} value={role} onChange={(e) => setRole(e.target.value)} placeholder="例：產品經理實習生" />
+            <label style={labelStyle}>職稱 / 角色 *</label>
+            <input style={inputStyle} value={role} onChange={(e) => setRole(e.target.value)} placeholder={type === "專案" ? "例：產品負責人" : "例：產品經理"} />
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
@@ -89,7 +112,7 @@ export default function ExperienceForm({ initial, onSave, onCancel }: Props) {
           </div>
         </div>
         <div style={{ marginBottom: 12 }}>
-          <label style={labelStyle}>工作描述 * <span style={{ color: "#aaa8a0", fontWeight: 400 }}>（用 STAR 法則描述，AI 會挑選最相關段落放入推薦信）</span></label>
+          <label style={labelStyle}>描述 * <span style={{ color: "#aaa8a0", fontWeight: 400 }}>（用 STAR 法則描述，AI 會挑選最相關段落放入推薦信）</span></label>
           <textarea
             style={{ ...inputStyle, minHeight: 120, resize: "vertical", fontFamily: "inherit", lineHeight: 1.65 }}
             value={description}

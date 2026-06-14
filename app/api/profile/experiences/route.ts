@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json() as {
+    type?: string;
     company: string;
     role: string;
     startDate?: string;
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
   };
 
   if (!body.company?.trim() || !body.role?.trim() || !body.description?.trim()) {
-    return NextResponse.json({ error: "公司名稱、職稱和工作描述為必填" }, { status: 400 });
+    return NextResponse.json({ error: "名稱、角色和描述為必填" }, { status: 400 });
   }
 
   const count = await prisma.workExperience.count({ where: { userId: session.user.id } });
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
   const exp = await prisma.workExperience.create({
     data: {
       userId: session.user.id,
+      type: body.type?.trim() || "工作",
       company: body.company.trim(),
       role: body.role.trim(),
       startDate: body.startDate?.trim() || null,

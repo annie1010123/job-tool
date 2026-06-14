@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       jdDescription: jd.description,
       jdSkills: (jd.skills as string[]) ?? [],
       workExperiences: workExperiences.map((e) => ({
+        type: e.type,
         company: e.company,
         role: e.role,
         startDate: e.startDate,

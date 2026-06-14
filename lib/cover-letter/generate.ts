@@ -3,6 +3,7 @@ import Groq from "groq-sdk";
 export type Tone = "formal" | "friendly" | "concise";
 
 export interface WorkExperienceInput {
+  type?: string; // 工作/實習/專案/社團/競賽/課程
   company: string;
   role: string;
   startDate: string | null;
@@ -33,7 +34,8 @@ function formatExperiences(exps: WorkExperienceInput[]): string {
     .map((e, i) => {
       const period = [e.startDate, e.endDate].filter(Boolean).join(" ～ ");
       const skillsStr = e.skills.length > 0 ? `\n  技能：${e.skills.join("、")}` : "";
-      return `【經歷 ${i + 1}】${e.company}｜${e.role}${period ? `（${period}）` : ""}
+      const typeLabel = e.type && e.type !== "工作" ? `${e.type}・` : "";
+      return `【經歷 ${i + 1}・${typeLabel}】${e.company}｜${e.role}${period ? `（${period}）` : ""}
   ${e.description}${skillsStr}`;
     })
     .join("\n\n");
@@ -59,13 +61,16 @@ export async function generateCoverLetter(input: GenerateInput): Promise<string>
 
 請嚴格按以下結構撰寫：
 1. 開頭：用一個具體的故事或洞察抓住注意力，展現求職者對該產業或公司的理解，而非套話
-2. 中段：從求職者提供的工作經歷中，挑選最符合職缺需求的 2-3 段，用 STAR 法則呈現（情境→任務→行動→結果），每段都要明確連結到 JD 的要求或關鍵字
+2. 中段：從求職者提供的經歷中，挑選最符合職缺需求的 2-3 段，用 STAR 法則呈現（情境→任務→行動→結果），每段都要明確連結到 JD 的要求或關鍵字。
+   經歷可能是工作、實習、專案、社團、競賽或課程作品——一律平等看待，挑「最能證明能力」的，不限正式工作經歷。
 3. 結尾：表達具體的貢獻意願，說明能為團隊帶來什麼，而非只說「我想學習」
 
 語氣要求：${TONE_INSTRUCTIONS[input.tone]}
 長度：400-600 字（繁體中文）
 注意：
 - 必須引用 JD 中的原文關鍵字，確保能通過 ATS 篩選
+- 若求職者沒有正式工作經歷（學生／新鮮人），以最相關的專案／競賽／實習經歷為主，強調可遷移能力，不要自我貶低
+- 若有豐富工作經歷（轉職／資深），聚焦最相關的職務成果與量化績效
 - 不要寫「我是一個熱愛學習的人」等空泛套話
 - 不要加標題、日期或「此致」等格式，直接從正文開始
 - 若工作經歷中有量化數字（%、倍數、金額），務必保留`,
@@ -84,7 +89,7 @@ ${desc}
 - 職稱：${input.resumeTitle ?? "未提供"}
 - 資歷等級：${input.resumeSeniority ?? "未提供"}
 
-【工作經歷（請從中挑選最相關的 2-3 段放入推薦信）】
+【求職者經歷（工作／實習／專案／社團／競賽皆可，請從中挑最相關的 2-3 段）】
 ${expBlock}
 
 請直接輸出推薦信正文。`,

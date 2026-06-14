@@ -66,7 +66,7 @@ export default async function Home() {
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:pb-24 lg:pt-14">
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-medium text-[#5f5e5a]">
-            為求職的學生與新鮮人打造
+            學生、新鮮人到轉職者都適用
           </span>
           <h1 className="mt-5 text-[2.4rem] font-bold leading-[1.15] tracking-tight sm:text-[3.1rem]">
             每天 AI 幫你挑好職缺，
