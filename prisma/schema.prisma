@@ -270,13 +270,33 @@ model QuestionBank {
   id                    String   @id @default(cuid())
   userId                String
   question              String
-  answer                String?  @db.Text
+  answer                String?  @db.Text   // deprecated：答案改存 AnswerVersion.content，保留以相容既有復盤寫入
   category              String   @default("other")
   sourceApplicationId   String?
   userPerformance       String?
   frequency             Int      @default(1)
+  isCore                Boolean  @default(false)
+  coreKey               String?
+  lastAskedCompanies    Json     @default("[]")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  versions AnswerVersion[]
+
+  @@unique([userId, coreKey])
+}
+
+model AnswerVersion {
+  id             String   @id @default(cuid())
+  questionBankId String
+  label          String   @default("我的版本")
+  content        String   @default("") @db.Text
+  score          Int?
+  grade          String?  // needs_improvement | ok | good
+  lastCoaching   Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  question QuestionBank @relation(fields: [questionBankId], references: [id], onDelete: Cascade)
 }
