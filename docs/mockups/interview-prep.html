@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JobPilot — 面試準備 Mockup</title>
+<style>
+  :root{
+    --cream:#f1efe8; --beige-side:#ebe9e2; --card:#ffffff;
+    --ink:#1a1a18; --ink2:#555552; --gray:#888780; --gray2:#aaa8a0;
+    --line:#e8e6df; --line2:#efece5; --surface:#eeece6; --surface2:#f4f1ea;
+    --btn-light:#f4f1ea; --btn-light-line:#e2ddd0;
+    --btn:#e6e0d2; --btn-line:#d8d1c0;
+    --green-bg:#e6f1ea; --green:#0f6e56;
+    --amber-bg:#fbf4e7; --amber-line:#efe3cb; --amber:#9a6a1c;
+    --red:#a32d2d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,"PingFang TC","Helvetica Neue",Arial,sans-serif;background:var(--cream);color:var(--ink);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .app{display:flex;min-height:100vh}
+  svg{display:block}
+
+  .side{width:208px;flex-shrink:0;background:var(--beige-side);border-right:.5px solid rgba(0,0,0,.07);padding:24px 14px;position:sticky;top:0;height:100vh}
+  .logo{font-weight:700;font-size:16px;letter-spacing:-.02em;padding:0 8px}
+  .logo small{display:block;font-size:11px;color:var(--gray2);font-weight:400;margin-top:2px}
+  .nav{margin-top:26px;display:flex;flex-direction:column;gap:1px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:9px;text-decoration:none;color:var(--gray);font-size:13px;transition:background .15s}
+  .nav a:hover{background:rgba(0,0,0,.04)}
+  .nav a.active{background:rgba(0,0,0,.06);color:var(--ink);font-weight:600}
+  .nav a svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+
+  .main{flex:1;min-width:0;overflow-y:auto}
+  .wrap{max-width:720px;margin:0 auto;padding:40px 28px 80px}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.015em}
+  .sub{color:var(--gray);font-size:13.5px;margin-top:6px}
+
+  .progress-row{display:flex;align-items:center;gap:14px;margin:28px 0 8px}
+  .progress-row .pl{font-size:13px;color:var(--ink);font-weight:600;white-space:nowrap}
+  .bar{flex:1;height:6px;background:var(--surface);border-radius:999px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--green);border-radius:999px}
+  .progress-row .pr{font-size:12px;color:var(--gray);white-space:nowrap}
+  .northstar{font-size:12px;color:var(--gray2);margin-bottom:22px}
+
+  .qtopbar{display:flex;align-items:center;margin-bottom:14px}
+  .qbseg{display:inline-flex;background:var(--surface);border-radius:9px;padding:3px;gap:2px}
+  .qbseg span{font-size:12.5px;font-weight:600;padding:7px 16px;border-radius:7px;color:var(--gray);cursor:pointer}
+  .qbseg span.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+
+  .qlist{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+
+  .qitem{border-bottom:1px solid var(--line2)}
+  .qitem:last-child{border-bottom:none}
+  .qhead{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;transition:background .15s}
+  .qhead:hover{background:#faf9f5}
+  .tri{width:12px;height:12px;stroke:var(--gray);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;transition:transform .18s}
+  .qitem.open .tri{transform:rotate(90deg)}
+  .tri-sp{width:12px;flex-shrink:0}
+  .qmain{flex:1;min-width:0}
+  .qt{font-size:15px;color:var(--ink);font-weight:500;line-height:1.45}
+  .rmeta{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gray);white-space:nowrap;flex-shrink:0}
+  .rcheck{width:14px;height:14px;stroke:var(--green);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .cta{flex-shrink:0}
+  .iconbtn{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray);border:1px solid var(--line);background:var(--card);flex-shrink:0}
+  .iconbtn:hover{background:var(--surface);color:var(--ink)}
+  .iconbtn svg{width:18px;height:18px}
+
+  .qbody{display:none;padding:2px 18px 18px 18px}
+  .qitem.open .qbody{display:block}
+  .qbody-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .qfoot{display:flex;align-items:center;gap:14px;margin-top:12px}
+  .link-act{font-size:12px;color:var(--ink2);cursor:pointer}
+  .link-act:hover{color:var(--ink)}
+  .link-act.danger{color:var(--red)}
+  .vadd-inline{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2);cursor:pointer;border:1px solid var(--btn-light-line);background:var(--btn-light);padding:5px 11px;border-radius:8px}
+  .vadd-inline:hover{background:var(--surface)}
+  .ans-view{background:transparent;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13.5px;color:var(--ink2);line-height:1.85}
+
+  .seg{display:inline-flex;background:var(--surface);border-radius:9px;padding:3px;gap:2px}
+  .seg span{font-size:12px;font-weight:600;padding:6px 13px;border-radius:7px;color:var(--gray);cursor:pointer}
+  .seg span.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+
+  .qrow{display:flex;align-items:center;gap:13px;padding:15px 18px;border-bottom:1px solid var(--line2);cursor:pointer;transition:background .15s}
+  .qrow:last-child{border-bottom:none}
+  .qrow:hover{background:#faf9f5}
+  .freq{display:flex;flex-direction:column;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:var(--surface);color:var(--ink);font-weight:700;font-size:15px;flex-shrink:0;line-height:1}
+  .freq small{font-size:9px;color:var(--gray);font-weight:500;margin-top:1px}
+  .qmeta{font-size:12px;color:var(--gray);margin-top:3px}
+  .chev{width:16px;height:16px;stroke:var(--gray);fill:none;stroke-width:1.8;flex-shrink:0}
+
+  .tip{display:flex;gap:9px;font-size:12.5px;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:11px;padding:12px 14px;margin-top:18px;line-height:1.6}
+  .tip svg{width:16px;height:16px;stroke:var(--amber);fill:none;stroke-width:1.8;flex-shrink:0;margin-top:1px}
+
+  .btn{font-size:13px;font-weight:500;padding:8px 14px;border-radius:9px;cursor:pointer;border:1px solid var(--btn-light-line);background:var(--btn-light);color:var(--ink);transition:background .15s}
+  .btn:hover{background:var(--surface)}
+  .btn-primary{background:var(--btn);color:var(--ink);border-color:var(--btn-line);font-weight:600}
+  .btn-primary:hover{background:#ded7c6}
+  .btn-sm{font-size:12px;padding:6px 13px;border-radius:8px}
+
+  /* 列選單 */
+  .rowmenu{position:fixed;display:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:5px;z-index:200;min-width:130px}
+  .rowmenu.on{display:block}
+  .rowmenu div{padding:8px 12px;font-size:13px;color:var(--ink2);cursor:pointer;border-radius:7px}
+  .rowmenu div:hover{background:var(--surface)}
+  .rowmenu div.danger{color:var(--red)}
+
+  /* 教練彈框 */
+  .overlay{position:fixed;inset:0;background:rgba(26,26,24,.42);display:none;padding:44px 16px;z-index:100;overflow-y:auto}
+  .overlay.on{display:flex}
+  .modal{background:var(--card);border-radius:18px;width:100%;max-width:880px;margin:auto;max-height:calc(100vh - 56px);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.2);overflow:hidden}
+  .m-head{padding:20px 24px 16px;border-bottom:1px solid var(--line2);position:relative;flex-shrink:0}
+  .m-eyebrow{font-size:11.5px;color:var(--gray2);font-weight:600;letter-spacing:.03em}
+  .m-title{font-size:18px;font-weight:700;line-height:1.4}
+  .m-titlerow{display:flex;align-items:center;gap:12px;margin-top:5px;padding-right:30px}
+  .m-close{position:absolute;top:18px;right:20px;cursor:pointer;border:none;background:none;padding:4px}
+  .m-close svg{width:18px;height:18px;stroke:var(--gray);fill:none;stroke-width:2}
+
+  .m-cols{display:flex;flex:1;min-height:380px;overflow:hidden}
+  .col-left{flex:1;padding:20px 22px;border-right:1px solid var(--line2);display:flex;flex-direction:column;overflow-y:auto}
+  .col-right{flex:1;padding:20px 22px;display:flex;flex-direction:column;overflow-y:auto}
+
+  .vbar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .vadd{font-size:12px;color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:3px}
+  .vadd svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.9}
+  .lab{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:7px}
+  .lab .note{font-weight:400;color:var(--gray2);font-size:11.5px;margin-left:6px}
+  textarea{width:100%;flex:1;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font:inherit;font-size:14px;line-height:1.7;resize:vertical;color:var(--ink);background:var(--card);min-height:300px}
+  textarea:focus{outline:none;border-color:var(--gray2)}
+  .mini-tip{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;color:var(--gray);line-height:1.5;margin-top:10px}
+  .mini-tip svg{width:13px;height:13px;stroke:var(--gray2);fill:none;stroke-width:1.7;flex-shrink:0;margin-top:1px}
+  .left-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
+  .col-right .rt{font-size:12px;font-weight:700;color:var(--gray2);letter-spacing:.03em;margin-bottom:14px}
+  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--gray2);gap:10px;padding:20px}
+  .empty svg{width:30px;height:30px;stroke:var(--gray2);fill:none;stroke-width:1.5}
+  .empty p{font-size:12.5px;line-height:1.6;max-width:200px}
+
+  .grade-line{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .grade{font-size:14px;font-weight:700}
+  .grade.ok{color:var(--amber)} .grade.good{color:var(--green)}
+  .grade-line .gsub{font-size:12px;color:var(--gray)}
+  .fb-group{margin-bottom:15px}
+  .fb-group .gt{font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:8px}
+  .fb-li{display:flex;gap:9px;font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:7px}
+  .fb-li svg{width:15px;height:15px;flex-shrink:0;margin-top:2px;fill:none;stroke-width:1.9}
+  .fb-li .ic-good{stroke:var(--green)} .fb-li .ic-imp{stroke:var(--amber)}
+  .fb-li b{color:var(--ink)}
+  .fb-eg{font-size:12px;color:var(--ink2);background:var(--surface2);border-left:2px solid var(--btn-line);border-radius:0 7px 7px 0;padding:7px 11px;margin:5px 0 11px 24px;line-height:1.65}
+  .fb-eg b{color:var(--gray);font-weight:700;font-size:10.5px;letter-spacing:.04em;margin-right:6px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11.5px;padding:4px 10px;border-radius:7px;font-weight:600}
+  .chip.y{background:var(--green-bg);color:var(--green)} .chip.n{background:#f6ebea;color:var(--red)}
+
+  @media (max-width:720px){ .m-cols{flex-direction:column} .col-left{border-right:none;border-bottom:1px solid var(--line2)} }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo">JobPilot<small>AI 求職教練</small></div>
+    <nav class="nav">
+      <a><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>主頁</a>
+      <a><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>找工作</a>
+      <a><svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="5" height="14" rx="1.5"/></svg>求職追蹤</a>
+      <a class="active"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z"/></svg>面試準備</a>
+      <a><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>個人資料</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="wrap">
+      <h1>面試準備</h1>
+      <p class="sub">把每場面試都會問的核心題練熟，磨好的答案會跟著你到每一場面試。</p>
+
+      <div class="progress-row">
+        <span class="pl">核心題準備度</span>
+        <div class="bar"><i style="width:66%"></i></div>
+        <span class="pr">4 / 6</span>
+      </div>
+      <div class="northstar">本週練習 12 次</div>
+
+      <div class="qtopbar">
+        <div class="qbseg">
+          <span class="on" id="segCore" onclick="qbView('core')">核心題</span>
+          <span id="segFreq" onclick="qbView('freq')">常被問到</span>
+        </div>
+        <span style="flex:1"></span>
+        <button class="btn btn-sm" onclick="openAddQuestion()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>新增題目</button>
+      </div>
+
+      <!-- 核心題視角 -->
+      <div id="qbCore">
+        <div class="qlist">
+          <!-- 已答（可展開）-->
+          <div class="qitem open">
+            <div class="qhead" onclick="toggleItem(this)">
+              <svg class="tri" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              <div class="qmain"><div class="qt">請做一個簡短的自我介紹</div></div>
+              <span class="rmeta"><svg class="rcheck" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>2 版本</span>
+            </div>
+            <div class="qbody">
+              <div class="qbody-top"><div class="seg"><span class="on">30秒</span><span>1分鐘</span></div><span style="flex:1"></span><button class="btn btn-sm" onclick="openModal(true,true)">編輯</button></div>
+              <div class="ans-view">我是專案管理背景、偏好用數據驅動決策的人。過去一年我負責兩個跨部門專案的進度協調，把交付準時率從 70% 拉到 95%。我想加入貴公司，是因為你們在 AI 產品上的節奏，正好是我想深耕的方向。</div>            </div>
+          </div>
+
+          <div class="qitem">
+            <div class="qhead" onclick="toggleItem(this)">
+              <svg class="tri" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+              <div class="qmain"><div class="qt">分享一次你解決問題的經驗</div></div>
+              <span class="rmeta"><svg class="rcheck" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>1 版本</span>
+            </div>
+            <div class="qbody">
+              <div class="qbody-top"><span class="vadd-inline"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>版本</span><span style="flex:1"></span><button class="btn btn-sm" onclick="openModal(false)">編輯</button></div>
+              <div class="ans-view">活動上線前三天合作廠商臨時退出，我重新盤點資源、改談 KOL 置換合作，活動如期上線且觸及超標 20%……</div>            </div>
+          </div>
+
+          <!-- 未答：不可展開，整列→現在練 -->
+          <div class="qitem">
+            <div class="qhead" onclick="openModal(false)">
+              <span class="tri-sp"></span>
+              <div class="qmain"><div class="qt">你遇過最大的挫折是什麼？你如何面對？</div></div>
+              <button class="btn btn-sm btn-primary cta" onclick="event.stopPropagation();openModal(false)">現在練</button>
+            </div>
+          </div>
+
+          <div class="qitem">
+            <div class="qhead" onclick="openModal(false)">
+              <span class="tri-sp"></span>
+              <div class="qmain"><div class="qt">在團隊合作中，你遇過最大的困難是什麼？</div></div>
+              <button class="btn btn-sm btn-primary cta" onclick="event.stopPropagation();openModal(false)">現在練</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>
+          <span>這些核心題的答案存起來後，之後每一場面試準備都會自動帶入，不用重寫。</span>
+        </div>
+      </div>
+
+      <!-- 常被問到視角 -->
+      <div id="qbFreq" style="display:none">
+        <div class="qlist">
+          <div class="qrow" onclick="openModal(false)">
+            <span class="freq">5<small>次</small></span>
+            <div class="qmain"><div class="qt">你怎麼處理跨部門的衝突？</div><div class="qmeta">Appier・趨勢科技・Google 問過 · 已有答案</div></div>
+            <svg class="chev" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="qrow">
+            <span class="freq">3<small>次</small></span>
+            <div class="qmain"><div class="qt">為什麼想轉做行銷？</div><div class="qmeta">永豐・其他 問過 · 還沒答案</div></div>
+            <button class="btn btn-sm btn-primary cta" onclick="event.stopPropagation();openModal(false)">現在練</button>
+          </div>
+          <div class="qrow">
+            <span class="freq">2<small>次</small></span>
+            <div class="qmain"><div class="qt">你最大的優點和缺點是什麼？</div><div class="qmeta">趨勢科技・永豐 問過 · 還沒答案</div></div>
+            <button class="btn btn-sm btn-primary cta" onclick="event.stopPropagation();openModal(false)">現在練</button>
+          </div>
+        </div>
+        <div class="tip">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>
+          <span>面試後在復盤勾選「這題被問到了」，「常被問到」就會自動長出你的個人考古題——越面越準。</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新增題目彈框 -->
+<div class="overlay" id="addOv" onclick="if(event.target===this)closeAdd()">
+  <div class="modal" style="max-width:460px;max-height:none">
+    <div class="m-head">
+      <button class="m-close" onclick="closeAdd()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      <div class="m-title" id="addTitle" style="margin-top:2px">新增題目</div>
+    </div>
+    <div style="padding:18px 22px 22px">
+      <div class="lab">題目</div>
+      <textarea id="newQ" style="min-height:72px;flex:none" placeholder="輸入你想練習的面試問題，例如：你為什麼想離開上一份工作？"></textarea>
+      <div class="lab" style="margin-top:14px">題型</div>
+      <div class="seg" id="newType" style="flex-wrap:wrap">
+        <span class="on" onclick="selType(this)">行為題</span><span onclick="selType(this)">技術題</span><span onclick="selType(this)">動機題</span><span onclick="selType(this)">情境題</span>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+        <button class="btn btn-sm" onclick="closeAdd()">取消</button>
+        <button class="btn btn-sm btn-primary" id="addBtn" onclick="addQuestion()">新增</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 教練彈框 -->
+<div class="overlay" id="ov" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="m-head">
+      <button class="m-close" onclick="closeModal()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg></button>
+      <div class="m-eyebrow" id="meyebrow">核心題 · 行為題 · 已備</div>
+      <div class="m-titlerow"><div class="m-title" id="mtitle">請做一個簡短的自我介紹</div><span class="link-act danger" onclick="if(confirm('確定刪除這題？'))closeModal()" style="white-space:nowrap">刪除題目</span></div>
+    </div>
+
+    <div class="m-cols">
+      <div class="col-left">
+        <div class="vbar" id="vbar">
+          <div class="seg"><span class="on">30秒</span><span>1分鐘</span></div>
+          <span class="vadd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>新增版本</span>
+        </div>
+        <div class="lab">我的答案<span class="note">AI 已生初稿，你的修改不會被覆蓋</span></div>
+        <textarea>我是專案管理背景、偏好用數據驅動決策的人。過去一年我負責兩個跨部門專案的進度協調，把交付準時率從 70% 拉到 95%。我想加入貴公司，是因為你們在 AI 產品上的節奏，正好是我想深耕的方向。</textarea>
+        <div class="mini-tip"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg><span>30 秒版：一句定位 ＋ 一個最有力的成果 ＋ 一句為什麼想來</span></div>
+        <div class="left-actions">
+          <button class="btn" onclick="this.textContent='已儲存 ✓';setTimeout(()=>this.textContent='儲存',1500)">儲存</button>
+          <button class="btn btn-primary" id="evalBtn" onclick="evaluate()">請教練評估</button>
+        </div>
+      </div>
+
+      <div class="col-right">
+        <div class="rt">教練回饋</div>
+        <div class="empty" id="empty">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-4 3v-3H4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p>寫好左邊的答案後，按「請教練評估」，建議會出現在這裡。</p>
+        </div>
+        <div id="fb" style="display:none;flex:1;flex-direction:column">
+          <div class="grade-line"><span class="grade ok">教練評等：可</span><span class="gsub">補兩處就會很強</span></div>
+          <div class="fb-group">
+            <div class="gt">做得好</div>
+            <div class="fb-li"><svg class="ic-good" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round"/></svg><span>有量化成果（70%→95%），定位也清楚。</span></div>
+          </div>
+          <div class="fb-group">
+            <div class="gt">可以更好</div>
+            <div class="fb-li"><svg class="ic-imp" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>30 秒版略長：</b>背景再砍一句，讓「95%」更早出現。</span></div>
+            <div class="fb-eg"><b>示範</b>「我是史安倪，專案管理出身——過去一年把跨部門專案的交付準時率從 70% 拉到 95%。」</div>
+            <div class="fb-li"><svg class="ic-imp" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>動機可更具體：</b>點名一個你欣賞的產品或場景。</span></div>
+            <div class="fb-eg"><b>示範</b>「我特別想加入你們，是因為〔某產品／某 campaign〕，想把這套洞察用在你們的受眾上。」</div>
+          </div>
+          <div class="fb-group">
+            <div class="gt">結構檢查</div>
+            <div class="chips"><span class="chip y">定位 ✓</span><span class="chip y">成果 ✓</span><span class="chip n">動機 待強化</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleItem(head){ head.parentElement.classList.toggle('open'); }
+function qbView(v){
+  document.getElementById('qbCore').style.display = v==='core'?'block':'none';
+  document.getElementById('qbFreq').style.display = v==='freq'?'block':'none';
+  document.getElementById('segCore').classList.toggle('on', v==='core');
+  document.getElementById('segFreq').classList.toggle('on', v==='freq');
+}
+function openModal(selfIntro, evaluated){
+  document.getElementById('mtitle').textContent = selfIntro ? '請做一個簡短的自我介紹' : '你遇過最大的挫折是什麼？你如何面對？';
+  document.getElementById('meyebrow').textContent = selfIntro ? '核心題 · 行為題 · 已備' : '核心題 · 行為題 · 草稿';
+  document.getElementById('vbar').innerHTML = selfIntro
+    ? '<div class="seg"><span class="on">30秒</span><span>1分鐘</span></div><span class="vadd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>新增版本</span>'
+    : '<div class="seg"><span class="on">我的版本</span></div><span class="vadd"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>新增版本</span>';
+  if(evaluated){ document.getElementById('empty').style.display='none'; document.getElementById('fb').style.display='flex'; document.getElementById('evalBtn').textContent='重新評估'; }
+  else { document.getElementById('empty').style.display='flex'; document.getElementById('fb').style.display='none'; document.getElementById('evalBtn').textContent='請教練評估'; }
+  document.getElementById('ov').classList.add('on');
+}
+function evaluate(){
+  document.getElementById('empty').style.display='none';
+  document.getElementById('fb').style.display='flex';
+  document.getElementById('evalBtn').textContent='重新評估';
+}
+function closeModal(){document.getElementById('ov').classList.remove('on')}
+
+let editingItem=null;
+function openAddQuestion(){ editingItem=null; document.getElementById('newQ').value=''; document.getElementById('addTitle').textContent='新增題目'; document.getElementById('addBtn').textContent='新增'; document.getElementById('addOv').classList.add('on'); }
+function closeAdd(){ document.getElementById('addOv').classList.remove('on'); editingItem=null; }
+function selType(el){ el.parentElement.querySelectorAll('span').forEach(s=>s.classList.remove('on')); el.classList.add('on'); }
+function editQ(el){ editingItem=el.closest('.qitem'); document.getElementById('newQ').value=editingItem.querySelector('.qt').textContent; document.getElementById('addTitle').textContent='編輯題目'; document.getElementById('addBtn').textContent='儲存'; document.getElementById('addOv').classList.add('on'); }
+function delQ(el){ if(confirm('確定刪除這題？')) el.closest('.qitem').remove(); }
+function addQuestion(){
+  const v=(document.getElementById('newQ').value||'').trim()||'（未命名題目）';
+  if(editingItem){ editingItem.querySelector('.qt').textContent=v; closeAdd(); return; }
+  const item=document.createElement('div');
+  item.className='qitem';
+  item.innerHTML='<div class="qhead" onclick="openModal(false)"><span class="tri-sp"></span><div class="qmain"><div class="qt"></div></div><button class="btn btn-sm btn-primary cta" onclick="event.stopPropagation();openModal(false)">現在練</button></div>';
+  item.querySelector('.qt').textContent=v;
+  document.querySelector('#qbCore .qlist').appendChild(item);
+  closeAdd();
+}
+</script>
+</body>
+</html>
