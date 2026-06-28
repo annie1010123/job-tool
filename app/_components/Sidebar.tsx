@@ -38,6 +38,15 @@ const NAV = [
     ),
   },
   {
+    href: "/interview",
+    label: "面試準備",
+    icon: (
+      <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+        <path d="M4 5h16v11H9l-4 3v-3H4z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/profile",
     label: "個人資料",
     icon: (

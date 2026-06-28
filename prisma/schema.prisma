@@ -29,6 +29,7 @@ model User {
   applications     Application[]
   questionBank     QuestionBank[]
   workExperiences  WorkExperience[]
+  coachUsages      CoachUsage[]
 }
 
 model Account {
@@ -299,4 +300,16 @@ model AnswerVersion {
   updatedAt      DateTime @updatedAt
 
   question QuestionBank @relation(fields: [questionBankId], references: [id], onDelete: Cascade)
+}
+
+// 北極星指標：每週 AI 面試準備使用次數。每次「請教練評估」成功就 append 一筆。
+model CoachUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  coreKey   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
