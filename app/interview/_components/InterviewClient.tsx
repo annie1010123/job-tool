@@ -69,8 +69,12 @@ export default function InterviewClient({
     });
   }
 
-  // 進入教練：核心題用 coreKey（不存在則建立），其他用 questionId
+  // 進入教練：資料已在手上（有 id 且有版本）就直接開不等 API；核心題第一次練才建列
   async function openCoach(q: QuestionDTO) {
+    if (q.id && q.versions.length > 0) {
+      setModalQ(q);
+      return;
+    }
     const body = q.coreKey ? { coreKey: q.coreKey } : { questionId: q.id };
     const r = await fetch("/api/interview/practice", {
       method: "POST",

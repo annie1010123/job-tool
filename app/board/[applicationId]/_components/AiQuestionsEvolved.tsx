@@ -55,16 +55,26 @@ const AI_SECTIONS: { title: string; types: AiQuestion["type"][]; empty: string }
   { title: "動機・情境題", types: ["動機題", "情境題"], empty: "補充題目後，動機與情境題會出現在這裡" },
 ];
 
-function SectionHeader({ title, count, extra }: { title: string; count: number; extra?: React.ReactNode }) {
+function SectionHeader({ title, count, collapsed, onToggle, extra }: {
+  title: string; count: number; collapsed: boolean; onToggle: () => void; extra?: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-2 mt-6 mb-2">
-      <h3 className="text-[13px] font-semibold text-[#1a1a18] tracking-wide">{title}</h3>
-      <span className="text-xs text-[#888780]">{count} 題</span>
+    <div className="flex items-center gap-2 mt-6 mb-2 select-none">
+      <button onClick={onToggle} className="flex items-center gap-2 cursor-pointer bg-transparent border-none p-0">
+        <svg width="12" height="12" fill="none" stroke="#888780" strokeWidth="2.5" viewBox="0 0 24 24"
+          style={{ transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)", transition: "transform .15s" }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+        <h3 className="text-[13px] font-semibold text-[#1a1a18] tracking-wide">{title}</h3>
+        <span className="text-xs text-[#888780]">{count} 題</span>
+      </button>
       <div className="flex-1" />
       {extra}
     </div>
   );
 }
+
+const COLLAPSE_KEY = "warroom-collapsed-sections";
 
 export default function AiQuestionsEvolved({
   applicationId,
@@ -92,6 +102,23 @@ export default function AiQuestionsEvolved({
   const [historyQuestions, setHistoryQuestions] = useState<QuestionDTO[]>([]);
   const [bankLoaded, setBankLoaded] = useState(false);
   const [modalQ, setModalQ] = useState<QuestionDTO | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      return new Set(JSON.parse(localStorage.getItem(COLLAPSE_KEY) ?? "[]") as string[]);
+    } catch {
+      return new Set();
+    }
+  });
+
+  function toggleSection(title: string) {
+    setCollapsed(prev => {
+      const next = new Set(prev);
+      next.has(title) ? next.delete(title) : next.add(title);
+      localStorage.setItem(COLLAPSE_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  }
 
   const refreshBank = useCallback(async () => {
     const historyUrl = roleCategory
@@ -107,8 +134,13 @@ export default function AiQuestionsEvolved({
     void refreshBank();
   }, [refreshBank]);
 
-  // 進入教練練習：核心題用 coreKey（不存在則建立），考古題用 questionId
+  // 進入教練練習。資料已在手上（有 id 且有版本）就直接開，不等 API；
+  // 只有核心題第一次練（DB 還沒建列）才需要先打 practice API 建立。
   async function openCoach(q: QuestionDTO) {
+    if (q.id && q.versions.length > 0) {
+      setModalQ(q);
+      return;
+    }
     const body = q.coreKey ? { coreKey: q.coreKey } : { questionId: q.id };
     const r = await fetch("/api/interview/practice", {
       method: "POST",
@@ -349,14 +381,18 @@ export default function AiQuestionsEvolved({
       <SectionHeader
         title="核心題目"
         count={coreQuestions.length}
+        collapsed={collapsed.has("核心題目")}
+        onToggle={() => toggleSection("核心題目")}
         extra={<a href="/interview" className="text-xs text-[#0f6e56] font-medium no-underline">管理題庫 →</a>}
       />
-      {!bankLoaded ? (
-        <p className="text-xs text-[#888780] py-3">載入中…</p>
-      ) : coreQuestions.length === 0 ? (
-        <p className="text-xs text-[#888780] py-3">核心題庫是空的，去「面試準備」頁新增</p>
-      ) : (
-        <div className="space-y-2">{coreQuestions.map(q => renderBankRow(q, "core"))}</div>
+      {!collapsed.has("核心題目") && (
+        !bankLoaded ? (
+          <p className="text-xs text-[#888780] py-3">載入中…</p>
+        ) : coreQuestions.length === 0 ? (
+          <p className="text-xs text-[#888780] py-3">核心題庫是空的，去「面試準備」頁新增</p>
+        ) : (
+          <div className="space-y-2">{coreQuestions.map(q => renderBankRow(q, "core"))}</div>
+        )
       )}
 
       {/* Toolbar（輪次 / 手動加題 / 補充題目）— 管的是下面的 AI 題目 */}
@@ -442,11 +478,18 @@ export default function AiQuestionsEvolved({
         const sectionQs = visibleForRound.filter(q => section.types.includes(q.type));
         return (
           <div key={section.title}>
-            <SectionHeader title={section.title} count={sectionQs.length} />
-            {sectionQs.length === 0 ? (
-              <p className="text-xs text-[#888780] py-2">{section.empty}</p>
-            ) : (
-              <div className="space-y-2">{sectionQs.map(renderAiCard)}</div>
+            <SectionHeader
+              title={section.title}
+              count={sectionQs.length}
+              collapsed={collapsed.has(section.title)}
+              onToggle={() => toggleSection(section.title)}
+            />
+            {!collapsed.has(section.title) && (
+              sectionQs.length === 0 ? (
+                <p className="text-xs text-[#888780] py-2">{section.empty}</p>
+              ) : (
+                <div className="space-y-2">{sectionQs.map(renderAiCard)}</div>
+              )
             )}
           </div>
         );
@@ -456,14 +499,18 @@ export default function AiQuestionsEvolved({
       <SectionHeader
         title={roleCategory ? `歷史題・${roleCategory}常被問` : "歷史題"}
         count={historyQuestions.length}
+        collapsed={collapsed.has("歷史題")}
+        onToggle={() => toggleSection("歷史題")}
         extra={!roleCategory ? <span className="text-xs text-[#888780]">在上方設定職類可精準篩選</span> : undefined}
       />
-      {!bankLoaded ? (
-        <p className="text-xs text-[#888780] py-3">載入中…</p>
-      ) : historyQuestions.length === 0 ? (
-        <p className="text-xs text-[#888780] py-3">完成面試復盤後，被問過的題目會自動累積到這裡</p>
-      ) : (
-        <div className="space-y-2">{historyQuestions.map(q => renderBankRow(q, "history"))}</div>
+      {!collapsed.has("歷史題") && (
+        !bankLoaded ? (
+          <p className="text-xs text-[#888780] py-3">載入中…</p>
+        ) : historyQuestions.length === 0 ? (
+          <p className="text-xs text-[#888780] py-3">完成面試復盤後，被問過的題目會自動累積到這裡</p>
+        ) : (
+          <div className="space-y-2">{historyQuestions.map(q => renderBankRow(q, "history"))}</div>
+        )
       )}
 
       {/* Hidden questions */}
