@@ -157,6 +157,26 @@ export async function listAskedQuestions(userId: string): Promise<QuestionDTO[]>
   return rows.map((r) => serialize(r, { isCore: false }));
 }
 
+/**
+ * 歷史題（考古題）依職類篩選：isCore=false 且（roleCategory = 指定職類 或 roleCategory 為 null）。
+ * roleCategory 傳 null（申請未設定職類）時，回傳全部考古題（不篩）。依被問次數排序。
+ */
+export async function listAskedQuestionsByRole(
+  userId: string,
+  roleCategory: string | null,
+): Promise<QuestionDTO[]> {
+  const where =
+    roleCategory == null
+      ? { userId, isCore: false }
+      : { userId, isCore: false, OR: [{ roleCategory }, { roleCategory: null }] };
+  const rows = (await prisma.questionBank.findMany({
+    where,
+    include: qbInclude,
+    orderBy: [{ frequency: "desc" }, { updatedAt: "desc" }],
+  })) as unknown as QbWithVersions[];
+  return rows.map((r) => serialize(r, { isCore: false }));
+}
+
 /** 確保某核心題在 DB 有 QuestionBank 列（首次練習時建立 + 預設版本），回傳序列化結果。 */
 export async function ensureCoreQuestion(userId: string, coreKey: string): Promise<QuestionDTO> {
   const cq = coreByKey.get(coreKey);

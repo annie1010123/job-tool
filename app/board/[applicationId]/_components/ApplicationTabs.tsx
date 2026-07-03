@@ -42,6 +42,7 @@ export default function ApplicationTabs({
   defaultTab = "ai",
   jdDescription,
   resumeUrl,
+  roleCategory,
 }: {
   applicationId: string;
   aiQuestions: AiQuestion[];
@@ -50,6 +51,7 @@ export default function ApplicationTabs({
   defaultTab?: TabKey;
   jdDescription?: string | null;
   resumeUrl?: string | null;
+  roleCategory?: string | null;
 }) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as TabKey | null;
@@ -88,8 +90,7 @@ export default function ApplicationTabs({
       {/* Tab content */}
       <div className="p-6">
         {activeTab === "ai" && (
-          // @ts-ignore -- Task 9 will add jdDescription + onGoToReview to AiQuestionsEvolved
-          <AiQuestionsEvolved applicationId={applicationId} initialQuestions={aiQuestions} jdDescription={jdDescription} onGoToReview={goToReview} />
+          <AiQuestionsEvolved applicationId={applicationId} initialQuestions={aiQuestions} jdDescription={jdDescription} roleCategory={roleCategory} onGoToReview={goToReview} />
         )}
         {activeTab === "cover-letter" && (
           <CoverLetterTab applicationId={applicationId} initialResumeUrl={resumeUrl ?? null} />

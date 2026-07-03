@@ -50,6 +50,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
           defaultTab={getDefaultTab(app.status)}
           jdDescription={app.jd.description}
           resumeUrl={app.resumeUrl ?? null}
+          roleCategory={app.roleCategory ?? null}
         >
           {/* 職缺資訊 tab content */}
           <div className="space-y-4">
