@@ -25,11 +25,12 @@ export async function POST(req: NextRequest) {
     startDate?: string;
     endDate?: string;
     description: string;
+    bullets?: string[];
     skills?: string[];
   };
 
-  if (!body.company?.trim() || !body.role?.trim() || !body.description?.trim()) {
-    return NextResponse.json({ error: "名稱、角色和描述為必填" }, { status: 400 });
+  if (!body.company?.trim() || !body.role?.trim()) {
+    return NextResponse.json({ error: "名稱和角色為必填" }, { status: 400 });
   }
 
   const count = await prisma.workExperience.count({ where: { userId: session.user.id } });
@@ -42,7 +43,8 @@ export async function POST(req: NextRequest) {
       role: body.role.trim(),
       startDate: body.startDate?.trim() || null,
       endDate: body.endDate?.trim() || null,
-      description: body.description.trim(),
+      description: body.description?.trim() ?? "",
+      bullets: body.bullets ?? [],
       skills: body.skills ?? [],
       order: count,
     },

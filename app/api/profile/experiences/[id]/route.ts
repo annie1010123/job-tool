@@ -19,6 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     startDate?: string;
     endDate?: string;
     description?: string;
+    bullets?: string[];
     skills?: string[];
     order?: number;
   };
@@ -32,6 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(body.startDate !== undefined && { startDate: body.startDate.trim() || null }),
       ...(body.endDate !== undefined && { endDate: body.endDate.trim() || null }),
       ...(body.description !== undefined && { description: body.description.trim() }),
+      ...(body.bullets !== undefined && { bullets: body.bullets }),
       ...(body.skills !== undefined && { skills: body.skills }),
       ...(body.order !== undefined && { order: body.order }),
     },

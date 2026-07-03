@@ -19,6 +19,11 @@ model User {
   emailVerified  DateTime?
   createdAt      DateTime  @default(now())
   locationFilter String[]  @default(["台北市", "新北市"])
+  school         String?
+  department     String?
+  grade          String?
+  portfolioUrl   String?
+  linkedinUrl    String?
 
   accounts         Account[]
   sessions         Session[]
@@ -257,6 +262,7 @@ model WorkExperience {
   startDate   String?
   endDate     String?
   description String   @db.Text
+  bullets     String[] @default([])
   skills      Json     @default("[]")
   order       Int      @default(0)
   createdAt   DateTime @default(now())

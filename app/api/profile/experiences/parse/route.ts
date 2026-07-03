@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
     }
     try {
       text = await pdfToText(Buffer.from(await file.arrayBuffer()));
-    } catch {
+    } catch (err) {
+      console.error("PDF parse error:", err);
       return NextResponse.json({ error: "PDF 解析失敗，請改用貼上文字" }, { status: 400 });
     }
   } else {
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
         startDate: e.startDate,
         endDate: e.endDate,
         description: e.description,
+        bullets: e.bullets,
         skills: e.skills,
         order: count + i,
       },
