@@ -60,7 +60,7 @@ const TODO_COLORS: Record<string, string> = {
 const TIMELINE_ICONS: Record<string, { bg: string; emoji: string }> = {
   apply: { bg: "#dcfce7", emoji: "📤" },
   interview: { bg: "#fef3c7", emoji: "🎤" },
-  status: { bg: "#f3e8ff", emoji: "📋" },
+  status: { bg: "#f0ebe1", emoji: "📋" },
 };
 
 function getGreeting(): string {

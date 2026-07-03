@@ -57,7 +57,7 @@ export default async function DashboardPage() {
       take: 20,
     }),
     prisma.application.findMany({
-      where: { userId: session.user.id, status: "interviewing", isArchived: false },
+      where: { userId: session.user.id, status: { in: ["interviewing", "second_round"] }, isArchived: false },
       include: { jd: { select: { companyName: true, title: true } } },
       orderBy: { updatedAt: "desc" },
       take: 5,
@@ -115,9 +115,9 @@ export default async function DashboardPage() {
     todos.push({
       id: `todo-interview-${app.id}`,
       type: "needs_prep",
-      label: `${app.jd.companyName} — 面試準備`,
+      label: `${app.jd.companyName} — ${app.status === "second_round" ? "二面準備" : "面試準備"}`,
       actionLabel: "開始準備",
-      actionHref: `/board/${app.id}`,
+      actionHref: `/board/${app.id}?tab=ai`,
     });
   }
 

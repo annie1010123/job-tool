@@ -88,12 +88,6 @@ export default function BoardListView({ apps, onArchive }: Props) {
                     {status === "interviewing" && interviewLabel ? interviewLabel : ""}
                   </span>
                   <div className="flex justify-end" onClick={e => e.stopPropagation()}>
-                    {status === "not_applied" && (
-                      <button onClick={() => router.push(`/board/${app.id}`)}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[#5DCAA5] bg-[#E1F5EE] text-[#0f6e56]">
-                        寫推薦信
-                      </button>
-                    )}
                     {status === "interviewing" && (
                       <button onClick={() => router.push(`/board/${app.id}`)}
                         className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[#5DCAA5] bg-[#E1F5EE] text-[#0f6e56]">
