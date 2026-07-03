@@ -51,6 +51,15 @@ interface Jd {
   skills: string[];
 }
 
+const ROLE_CATEGORIES = [
+  "產品/專案管理",
+  "行銷",
+  "UIUX 設計",
+  "工程",
+  "其他",
+] as const;
+type RoleCategoryOption = (typeof ROLE_CATEGORIES)[number];
+
 interface Application {
   id: string;
   status: string;
@@ -59,6 +68,7 @@ interface Application {
   scheduledAt: string | null;
   createdAt: string;
   note: string | null;
+  roleCategory: string | null;
   aiQuestions: AiQuestion[] | string[];
   jd: Jd;
   interviewRecords: InterviewRecord[];
@@ -157,6 +167,9 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
   const [jd, setJd] = useState(application.jd);
   const [status, setStatus] = useState(application.status);
   const [companyType, setCompanyType] = useState<string | null>(application.companyType ?? null);
+  const [roleCategory, setRoleCategory] = useState<string | null>(application.roleCategory ?? null);
+  const [roleCategoryOpen, setRoleCategoryOpen] = useState(false);
+  const roleCategoryRef = useRef<HTMLDivElement>(null);
   const [appliedAt, setAppliedAt] = useState<string>(
     application.appliedAt
       ? new Date(application.appliedAt).toISOString().slice(0, 10)
@@ -206,8 +219,9 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
 
   useEffect(() => {
     function handle(e: MouseEvent) {
-      if (statusRef.current  && !statusRef.current.contains(e.target as Node))  setStatusOpen(false);
-      if (archiveRef.current && !archiveRef.current.contains(e.target as Node)) setArchiveOpen(false);
+      if (statusRef.current        && !statusRef.current.contains(e.target as Node))        setStatusOpen(false);
+      if (archiveRef.current       && !archiveRef.current.contains(e.target as Node))       setArchiveOpen(false);
+      if (roleCategoryRef.current  && !roleCategoryRef.current.contains(e.target as Node))  setRoleCategoryOpen(false);
     }
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
@@ -254,6 +268,12 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
   async function updateCompanyType(value: string | null) {
     setCompanyType(value);
     await patchApp({ companyType: value });
+  }
+
+  async function updateRoleCategory(value: RoleCategoryOption) {
+    setRoleCategory(value);
+    setRoleCategoryOpen(false);
+    await patchApp({ roleCategory: value });
   }
 
   async function updateAppliedAt(date: string) {
@@ -484,6 +504,36 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
             </div>
           )}
         </div>
+        {/* 職類下拉 */}
+        <div className="relative mb-2" ref={roleCategoryRef}>
+          <button
+            onClick={() => setRoleCategoryOpen(o => !o)}
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
+            style={{ background: "#E1F5EE", borderColor: "#a3d9c5", color: "#0f6e56" }}
+          >
+            {roleCategory ?? "選擇職類"}
+            <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          {roleCategoryOpen && (
+            <div className="absolute top-full left-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-lg z-20 min-w-[160px] overflow-hidden">
+              {ROLE_CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => updateRoleCategory(cat)}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-[#f5f3ee] ${
+                    roleCategory === cat ? "font-semibold text-[#0f6e56]" : "text-zinc-600"
+                  }`}
+                >
+                  {cat}
+                  {roleCategory === cat && <span className="ml-auto float-right text-[#0f6e56] text-xs">✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center gap-2 flex-wrap">
           {currentCompanyType && (
             <span className={`text-xs rounded-full px-2.5 py-1 ${currentCompanyType.badge}`}>

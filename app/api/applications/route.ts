@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db/client";
+import { inferRoleCategory } from "@/lib/jobs/role-category";
 
 export async function GET() {
   const session = await auth();
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
         jdId: jd.id,
         status: body.status ?? "not_applied",
         companyType: companyType ?? null,
+        roleCategory: inferRoleCategory(jobTitle.trim()),
       },
       include: { jd: { select: { title: true, companyName: true } } },
     });
@@ -88,8 +90,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ application: existing });
   }
 
+  const jdForCategory = await prisma.jd.findUnique({ where: { id: body.jdId }, select: { title: true } });
   const application = await prisma.application.create({
-    data: { userId: session.user.id, jdId: body.jdId, status: body.status ?? "not_applied" },
+    data: {
+      userId: session.user.id,
+      jdId: body.jdId,
+      status: body.status ?? "not_applied",
+      roleCategory: jdForCategory ? inferRoleCategory(jdForCategory.title) : "其他",
+    },
     include: { jd: { select: { title: true, companyName: true } } },
   });
 

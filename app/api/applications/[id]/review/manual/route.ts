@@ -40,6 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         category: qa.category,
         sourceApplicationId: id,
         userPerformance: qa.quality,
+        roleCategory: app.roleCategory ?? null,
       },
     });
   }

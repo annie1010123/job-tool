@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const { reviewId } = await req.json();
   const review = await prisma.interviewReview.findUnique({
     where: { id: reviewId },
-    include: { application: true },
+    include: { application: { select: { userId: true, roleCategory: true } } },
   });
 
   if (!review || review.application.userId !== session.user.id) {
@@ -32,6 +32,8 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  const appRoleCategory = review.application.roleCategory ?? null;
+
   // Auto-populate question bank
   for (const qa of analysis.extractedQA) {
     await prisma.questionBank.create({
@@ -42,6 +44,7 @@ export async function POST(req: NextRequest) {
         category: qa.category,
         sourceApplicationId: review.applicationId,
         userPerformance: qa.quality,
+        roleCategory: appRoleCategory,
       },
     });
   }
