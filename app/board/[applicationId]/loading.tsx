@@ -3,7 +3,7 @@ import AppShell from "@/app/_components/AppShell";
 export default function ApplicationLoading() {
   return (
     <AppShell>
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-[1040px] mx-auto px-9 py-7">
         <div style={{ height: 14, width: 80, background: "#e8e6df", borderRadius: 4, marginBottom: 24 }} />
         <div style={{ background: "#fff", borderRadius: 12, border: "0.5px solid rgba(0,0,0,0.08)", padding: "20px 24px", marginBottom: 16 }}>
           <div style={{ height: 20, width: "60%", background: "#e8e6df", borderRadius: 4, marginBottom: 10 }} />

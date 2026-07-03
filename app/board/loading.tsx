@@ -3,7 +3,7 @@ import AppShell from "@/app/_components/AppShell";
 export default function BoardLoading() {
   return (
     <AppShell>
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-[1040px] mx-auto px-9 py-7">
         <div style={{ height: 22, width: 100, background: "#e8e6df", borderRadius: 6, marginBottom: 20 }} />
         <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
           {[80, 70, 65, 55, 60].map((w, i) => (

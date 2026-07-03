@@ -3,7 +3,7 @@ import AppShell from "@/app/_components/AppShell";
 export default function DashboardLoading() {
   return (
     <AppShell>
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-[1040px] mx-auto px-9 py-7">
         <div style={{ marginBottom: 24 }}>
           <div style={{ height: 24, width: 80, background: "#e8e6df", borderRadius: 6, marginBottom: 8 }} />
           <div style={{ height: 16, width: 180, background: "#e8e6df", borderRadius: 4 }} />
