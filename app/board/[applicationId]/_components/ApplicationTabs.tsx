@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import CoverLetterTab from "./CoverLetterTab";
 import ReviewTab from "./ReviewTab";
 import AiQuestionsEvolved from "./AiQuestionsEvolved";
@@ -50,7 +51,18 @@ export default function ApplicationTabs({
   jdDescription?: string | null;
   resumeUrl?: string | null;
 }) {
-  const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as TabKey | null;
+  const validTabs: TabKey[] = ["ai", "cover-letter", "review", "info"];
+  const resolvedDefault: TabKey = (tabParam && validTabs.includes(tabParam)) ? tabParam : defaultTab;
+  const [activeTab, setActiveTab] = useState<TabKey>(resolvedDefault);
+
+  // 若 URL ?tab= 變動（例如從外部導航），同步更新
+  useEffect(() => {
+    if (tabParam && validTabs.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   function goToReview() { setActiveTab("review"); }
 

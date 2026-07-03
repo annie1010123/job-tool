@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import type { QuestionDTO, VersionDTO } from "@/lib/interview/store";
 import type { CoachResult } from "@/lib/interview/coach";
+import type { ActiveApplication } from "../page";
 
 type View = "core" | "freq";
 
@@ -24,10 +25,12 @@ export default function InterviewClient({
   initialCore,
   initialAsked,
   initialWeeklyUses,
+  activeApplications,
 }: {
   initialCore: QuestionDTO[];
   initialAsked: QuestionDTO[];
   initialWeeklyUses: number;
+  activeApplications: ActiveApplication[];
 }) {
   const [core, setCore] = useState(initialCore);
   const [asked, setAsked] = useState(initialAsked);
@@ -88,6 +91,30 @@ export default function InterviewClient({
     <div className="wrap">
       <h1>面試準備</h1>
       <p className="sub">把每場面試都會問的核心題練熟，磨好的答案會跟著你到每一場面試。</p>
+
+      {activeApplications.length > 0 && (
+        <div className="active-interviews">
+          <div className="ai-label">進行中的面試（{activeApplications.length}）</div>
+          <div className="ai-cards">
+            {activeApplications.map((app) => (
+              <div key={app.id} className="ai-card">
+                <div className="ai-card-info">
+                  <span className="ai-company">{app.companyName}</span>
+                  <span className="ai-title">{app.title}{app.scheduledAt ? (
+                    <span className="ai-date">・{new Date(app.scheduledAt).toLocaleDateString("zh-TW", { month: "numeric", day: "numeric" })} 面試</span>
+                  ) : null}</span>
+                </div>
+                <a
+                  href={`/board/${app.id}?tab=ai`}
+                  className="ai-card-link"
+                >
+                  準備這場 →
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="progress-row">
         <span className="pl">核心題準備度</span>
@@ -700,9 +727,19 @@ const ArrowSmall = () => (
 
 /* ───────────────── styles (ported from mockup) ───────────────── */
 const styles = `
-  .wrap{max-width:720px;margin:0 auto;padding:40px 28px 80px;color:#1a1a18;font-size:14px;line-height:1.55}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 36px 80px;color:#1a1a18;font-size:14px;line-height:1.55}
   h1{font-size:24px;font-weight:700;letter-spacing:-.015em}
   .sub{color:#888780;font-size:13.5px;margin-top:6px}
+  .active-interviews{background:#E1F5EE;border-radius:14px;padding:16px 18px;margin:20px 0 24px}
+  .ai-label{font-size:12px;font-weight:600;color:#0f6e56;margin-bottom:12px}
+  .ai-cards{display:flex;flex-wrap:wrap;gap:10px}
+  .ai-card{background:#fff;border-radius:11px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:260px;flex:1}
+  .ai-card-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .ai-company{font-size:14px;font-weight:700;color:#1a1a18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ai-title{font-size:12px;color:#888780;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ai-date{color:#888780}
+  .ai-card-link{font-size:13px;font-weight:600;color:#0f6e56;white-space:nowrap;text-decoration:none;flex-shrink:0}
+  .ai-card-link:hover{text-decoration:underline}
   .progress-row{display:flex;align-items:center;gap:14px;margin:28px 0 8px}
   .progress-row .pl{font-size:13px;color:#1a1a18;font-weight:600;white-space:nowrap}
   .bar{flex:1;height:6px;background:#eeece6;border-radius:999px;overflow:hidden}

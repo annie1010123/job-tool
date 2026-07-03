@@ -197,6 +197,12 @@ export default function AiQuestionsEvolved({
         </div>
       )}
 
+      {/* 反向提示：引導去核心題庫 */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#f5f3ee", borderRadius:10, padding:"10px 14px", marginBottom:14, gap:12 }}>
+        <span style={{ fontSize:12.5, color:"#888780", lineHeight:1.5 }}>這裡是針對這間公司的題目，通用題（自我介紹、動機）在核心題庫</span>
+        <a href="/interview" style={{ fontSize:12.5, color:"#0f6e56", fontWeight:600, whiteSpace:"nowrap", textDecoration:"none" }}>去複習 →</a>
+      </div>
+
       {/* Progress bar */}
       {visibleForRound.length > 0 && (
         <div className="flex items-center gap-3 mb-4">

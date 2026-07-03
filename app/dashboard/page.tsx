@@ -127,7 +127,7 @@ export default async function DashboardPage() {
       type: "new_recs",
       label: `${recommendations.length} 筆新推薦職缺待查看`,
       actionLabel: "查看",
-      actionHref: "/dashboard/recommendations",
+      actionHref: "/saved",
     });
   }
 
