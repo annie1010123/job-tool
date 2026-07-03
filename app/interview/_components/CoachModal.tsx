@@ -252,7 +252,7 @@ export default function CoachModal({
           </div>
         </div>
       </div>
-      <style jsx global>{modalStyles}</style>
+      <style dangerouslySetInnerHTML={{ __html: modalStyles }} />
     </div>
   );
 }
