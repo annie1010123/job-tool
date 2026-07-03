@@ -39,7 +39,7 @@ export default function ResumeUploadPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+    <div className="flex min-h-screen items-center justify-center bg-[#f5f3ee]">
       <div className="w-full max-w-lg rounded-xl bg-white p-8 shadow-sm border border-zinc-100">
         {/* Steps */}
         <div className="flex items-center gap-2 mb-6 text-sm">

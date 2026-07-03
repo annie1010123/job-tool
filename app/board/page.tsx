@@ -37,7 +37,7 @@ export default async function BoardPage() {
 
   return (
     <AppShell>
-      <div className="px-6 py-10">
+      <div className="max-w-[1040px] mx-auto px-9 py-7">
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-zinc-900">求職追蹤</h1>
           <p className="text-sm text-zinc-500 mt-0.5">追蹤每個職缺的投遞進度與面試紀錄</p>

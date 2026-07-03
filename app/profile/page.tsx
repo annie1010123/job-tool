@@ -26,7 +26,7 @@ export default async function ProfilePage() {
 
   return (
     <AppShell>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "28px 36px" }}>
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 36px" }}>
         <ProfileInfoCard initial={user} />
         <div style={{ marginTop: 24 }}>
           <ExperienceList initialExperiences={JSON.parse(JSON.stringify(experiences))} />

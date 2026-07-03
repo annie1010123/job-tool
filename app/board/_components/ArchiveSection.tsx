@@ -10,7 +10,7 @@ export interface ArchivedApp {
 const REASON: Record<string, { label: string; cls: string }> = {
   ghosted:  { label: "久沒回音",   cls: "bg-zinc-100 text-zinc-500" },
   rejected: { label: "收到感謝信", cls: "bg-red-50 text-red-600" },
-  withdrew: { label: "主動放棄",   cls: "bg-blue-50 text-blue-600" },
+  withdrew: { label: "主動放棄",   cls: "bg-[#f0ebe1] text-[#5F5E5A]" },
 };
 
 interface Props { apps: ArchivedApp[]; onRestore: (id: string) => void; }

@@ -44,7 +44,7 @@ interface Props {
 }
 
 const STATUS_CONFIG = [
-  { value: "applied", label: "投遞中", color: "#2563eb" },
+  { value: "applied", label: "投遞中", color: "#888780" },
   { value: "interviewing", label: "面試中", color: "#ea580c" },
   { value: "second_round", label: "二面", color: "#dc2626" },
   { value: "offer", label: "錄取 🎉", color: "#16a34a" },
@@ -54,7 +54,7 @@ const STATUS_CONFIG = [
 const TODO_COLORS: Record<string, string> = {
   ghosted: "#ea580c",
   needs_prep: "#f59e0b",
-  new_recs: "#3b82f6",
+  new_recs: "#0f6e56",
 };
 
 const TIMELINE_ICONS: Record<string, { bg: string; emoji: string }> = {
@@ -86,7 +86,7 @@ export default function DashboardHome({
   const greeting = getGreeting();
 
   return (
-    <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px" }}>
+    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 36px" }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a18", marginBottom: 4 }}>
@@ -293,7 +293,7 @@ export default function DashboardHome({
                   href={todo.actionHref}
                   style={{
                     fontSize: 12,
-                    color: "#2563eb",
+                    color: "#0f6e56",
                     textDecoration: "none",
                     whiteSpace: "nowrap",
                     flexShrink: 0,

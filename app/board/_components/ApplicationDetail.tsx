@@ -26,8 +26,8 @@ interface AiQuestion {
 }
 
 const TYPE_COLOR: Record<string, string> = {
-  行為題: "bg-blue-50 text-blue-600",
-  技術題: "bg-violet-50 text-violet-600",
+  行為題: "bg-[#E1F5EE] text-[#0f6e56]",
+  技術題: "bg-[#f0ebe1] text-[#5F5E5A]",
   動機題: "bg-green-50 text-green-600",
   情境題: "bg-amber-50 text-amber-600",
 };
@@ -479,7 +479,7 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
               status === "offer"        ? "bg-green-50 border-green-300 text-green-800" :
               status === "rejected"     ? "bg-red-50 border-red-300 text-red-700" :
               status === "interviewing" ? "bg-amber-50 border-amber-300 text-amber-800" :
-              status === "applied"      ? "bg-blue-50 border-blue-300 text-blue-800" :
+              status === "applied"      ? "bg-[#f0ebe1] border-[#D3D1C7] text-[#444441]" :
               "bg-zinc-100 border-zinc-200 text-zinc-700"
             }`}>
             <span className={`w-2 h-2 rounded-full ${STATUSES.find(s => s.value === status)?.dot ?? "bg-zinc-400"}`} />
@@ -1052,8 +1052,8 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
                                       <p className="text-xs font-medium text-amber-600 mb-1">② 可以更具體的地方</p>
                                       <p className="text-zinc-600 leading-relaxed">{qa.aiReview.improve}</p>
                                     </div>
-                                    <div className="px-3 py-2.5 bg-blue-50/50">
-                                      <p className="text-xs font-medium text-blue-600 mb-1">③ 建議優化版本</p>
+                                    <div className="px-3 py-2.5 bg-[#f5f3ee]">
+                                      <p className="text-xs font-medium text-[#0f6e56] mb-1">③ 建議優化版本</p>
                                       <p className="text-zinc-700 leading-relaxed">{qa.aiReview.suggested}</p>
                                     </div>
                                   </div>
@@ -1132,7 +1132,7 @@ export default function ApplicationDetail({ application, headerOnly = false }: {
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-zinc-900 text-white text-sm rounded-xl px-4 py-2.5 shadow-xl z-50 whitespace-nowrap">
           {toast.msg}
-          <button onClick={undoStatus} className="text-violet-400 font-semibold hover:text-violet-300 transition-colors">
+          <button onClick={undoStatus} className="text-[#5DCAA5] font-semibold hover:text-[#0f6e56] transition-colors">
             復原
           </button>
         </div>

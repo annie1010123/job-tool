@@ -64,7 +64,7 @@ export default async function SavedPage() {
 
   return (
     <AppShell>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 36px" }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a18" }}>找工作</h1>
           <p style={{ fontSize: 13, color: "#888780", marginTop: 4 }}>AI 推薦職缺，點擊查看詳情</p>

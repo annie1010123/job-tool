@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<string, string> = {
   offer: "錄取 🎉", rejected: "感謝信",
 };
 const STATUS_BADGE: Record<string, string> = {
-  applied:     "bg-blue-50 text-blue-700",
+  applied:     "bg-[#f0ebe1] text-[#5F5E5A]",
   interviewing:"bg-amber-50 text-amber-700",
   second_round:"bg-amber-100 text-amber-800",
   offer:       "bg-green-50 text-green-700",
@@ -90,13 +90,13 @@ export default function BoardListView({ apps, onArchive }: Props) {
                   <div className="flex justify-end" onClick={e => e.stopPropagation()}>
                     {status === "not_applied" && (
                       <button onClick={() => router.push(`/board/${app.id}`)}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700">
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[#5DCAA5] bg-[#E1F5EE] text-[#0f6e56]">
                         寫推薦信
                       </button>
                     )}
                     {status === "interviewing" && (
                       <button onClick={() => router.push(`/board/${app.id}`)}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-violet-200 bg-violet-50 text-violet-700">
+                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-[#5DCAA5] bg-[#E1F5EE] text-[#0f6e56]">
                         準備面試
                       </button>
                     )}

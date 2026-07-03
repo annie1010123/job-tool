@@ -409,7 +409,7 @@ const CloseIcon = () => (
 );
 /* ───────────────── styles (ported from mockup) ───────────────── */
 const styles = `
-  .wrap{max-width:860px;margin:0 auto;padding:28px 36px 80px;color:#1a1a18;font-size:14px;line-height:1.55}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 36px 80px;color:#1a1a18;font-size:14px;line-height:1.55}
   h1{font-size:24px;font-weight:700;letter-spacing:-.015em}
   .sub{color:#888780;font-size:13.5px;margin-top:6px}
   .active-interviews{background:#E1F5EE;border-radius:14px;padding:16px 18px;margin:20px 0 24px}

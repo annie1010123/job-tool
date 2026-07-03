@@ -88,7 +88,7 @@ export default function IntentPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-[#f5f3ee] py-12">
       <div className="w-full max-w-lg rounded-xl bg-white p-8 shadow-sm border border-zinc-100">
 
         <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-zinc-700 mb-6 inline-block transition-colors">

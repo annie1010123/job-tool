@@ -15,7 +15,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50">
+    <div className="flex min-h-screen items-center justify-center bg-[#f5f3ee]">
       <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-sm border border-zinc-100">
         <h1 className="text-xl font-semibold text-zinc-900 mb-1">登入 JobPilot</h1>
         <p className="text-sm text-zinc-500 mb-6">選擇登入方式</p>

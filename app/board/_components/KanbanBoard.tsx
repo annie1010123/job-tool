@@ -8,7 +8,7 @@ import ArchiveSection, { type ArchivedApp } from "./ArchiveSection";
 
 // 詳細頁狀態下拉用（5 個選項）
 export const STATUSES = [
-  { value: "applied",      label: "投遞中",         dot: "bg-blue-500" },
+  { value: "applied",      label: "投遞中",         dot: "bg-[#888780]" },
   { value: "interviewing", label: "面試中（一面）",  dot: "bg-amber-500" },
   { value: "second_round", label: "面試中（二面）",  dot: "bg-amber-600" },
   { value: "offer",        label: "錄取 🎉",        dot: "bg-green-500" },
@@ -19,14 +19,14 @@ export type AppStatus = (typeof STATUSES)[number]["value"];
 
 // 看板 3 欄：投遞中 → 面試中（含一面/二面）→ 結果（錄取 + 感謝信）
 export const KANBAN_COLUMNS = [
-  { value: "applied",      label: "投遞中", dot: "bg-blue-500", colBg: "bg-blue-50/40",   statuses: ["applied"] as string[] },
+  { value: "applied",      label: "投遞中", dot: "bg-[#888780]", colBg: "bg-[#f0ebe1]/60",   statuses: ["applied"] as string[] },
   { value: "interviewing", label: "面試中", dot: "bg-amber-500",colBg: "bg-amber-50/40",  statuses: ["interviewing", "second_round"] as string[] },
   { value: "result",       label: "結果",   dot: "bg-green-500",colBg: "bg-green-50/40",  statuses: ["offer", "rejected"] as string[] },
 ] as const;
 
 export const COMPANY_TYPES = [
   { value: "startup", label: "新創", badge: "bg-orange-100 text-orange-600" },
-  { value: "large", label: "大公司", badge: "bg-blue-100 text-blue-600" },
+  { value: "large", label: "大公司", badge: "bg-[#f0ebe1] text-[#5F5E5A]" },
   { value: "traditional", label: "傳產", badge: "bg-zinc-100 text-zinc-500" },
 ] as const;
 

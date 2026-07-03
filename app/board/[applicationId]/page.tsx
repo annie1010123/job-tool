@@ -33,7 +33,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ ap
 
   return (
     <AppShell>
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-[1040px] mx-auto px-9 py-7">
         <Link href="/board" className="text-sm text-zinc-400 hover:text-zinc-700 transition-colors mb-6 inline-block">
           ← 回求職追蹤
         </Link>
