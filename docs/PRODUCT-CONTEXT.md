@@ -48,4 +48,4 @@
 
 - `docs/FILE-MAP.md` — 功能 → 檔案對照地圖
 - `docs/JobPilot-PRD-v4.0.html` — PRD
-- `TASKS.md` / `TICKETS.md` — 任務清單
+- `docs/history/` — 已完成的任務清單（TASKS/TICKETS）與歷史計畫

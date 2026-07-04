@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobPilot — PM 作品集 Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f4f2ec; --ink: #1a1a18; --muted: #5f5e5a; --faint: #888780;
+    --green: #0f6e56; --green-bg: #E1F5EE; --warm: #f0ebe1; --card: #ffffff;
+    --coral: #D85A30; --line: rgba(0,0,0,0.08);
+  }
+  body {
+    background: #e8e6df; color: var(--ink);
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    overflow: hidden;
+  }
+  .deck { position: absolute; inset: 0; margin: auto; width: 100vw; height: 100vh;
+    max-width: calc(100vh * 16 / 9); max-height: calc(100vw * 9 / 16); background: var(--bg); }
+  .slide { position: absolute; inset: 0; padding: 4.5% 6%; display: none;
+    flex-direction: column; background: var(--bg); }
+  .slide.active { display: flex; }
+  .eyebrow { font-size: clamp(11px, 1.2vw, 15px); font-weight: 700; letter-spacing: .18em;
+    color: var(--faint); text-transform: uppercase; }
+  .headline { font-size: clamp(26px, 3.6vw, 52px); font-weight: 800; line-height: 1.2;
+    letter-spacing: -0.01em; margin-top: 14px; }
+  .headline .g { color: var(--green); }
+  .sub { font-size: clamp(13px, 1.5vw, 20px); color: var(--muted); margin-top: 14px; line-height: 1.6; }
+  .body { flex: 1; display: flex; align-items: center; }
+  .foot { display: flex; justify-content: space-between; align-items: center;
+    font-size: clamp(10px, 1vw, 13px); color: var(--faint); }
+  .quote { font-weight: 600; color: var(--green); }
+  .cards { display: grid; gap: 2%; width: 100%; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 4% 4.5%; }
+  .num { font-size: clamp(13px, 1.4vw, 18px); font-weight: 800; color: var(--coral); }
+  .card h3 { font-size: clamp(15px, 1.8vw, 24px); font-weight: 700; margin-top: 8px; line-height: 1.35; }
+  .card p { font-size: clamp(12px, 1.3vw, 17px); color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .tag { display: inline-block; background: var(--green-bg); color: var(--green);
+    font-size: clamp(10px, 1.1vw, 14px); font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+  .tag.warm { background: var(--warm); color: var(--muted); }
+  .metric { text-align: center; }
+  .metric .v { font-size: clamp(30px, 4vw, 58px); font-weight: 800; color: var(--green); }
+  .metric .l { font-size: clamp(11px, 1.2vw, 15px); color: var(--faint); margin-top: 6px; }
+  .arrow { font-size: clamp(18px, 2.2vw, 32px); color: var(--faint); text-align: center; }
+  table { width: 100%; border-collapse: collapse; background: var(--card);
+    border-radius: 18px; overflow: hidden; border: 1px solid var(--line); }
+  th, td { padding: 1.6% 2.4%; text-align: left; font-size: clamp(12px, 1.35vw, 18px); line-height: 1.5; }
+  th { background: var(--warm); color: var(--muted); font-size: clamp(11px, 1.15vw, 15px);
+    letter-spacing: .06em; }
+  tr + tr td { border-top: 1px solid var(--line); }
+  td:first-child { font-weight: 700; white-space: nowrap; }
+  td .why { color: var(--muted); }
+  .mock { background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    box-shadow: 0 24px 60px -28px rgba(0,0,0,.25); padding: 4%; }
+  .mock .sec { margin-top: 3.5%; }
+  .mock .sec:first-child { margin-top: 0; }
+  .mock .sec-t { font-size: clamp(11px, 1.2vw, 15px); font-weight: 700; }
+  .mock .sec-t span { font-weight: 400; color: var(--faint); }
+  .mock .row { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    background: #faf9f6; border: 1px solid var(--line); border-radius: 12px;
+    padding: 2.4% 3.2%; margin-top: 6px; font-size: clamp(11px, 1.3vw, 16px); }
+  .mock .row.hl { background: var(--green-bg); border-color: rgba(15,110,86,.25); }
+  .mock .row .r-tag { font-size: clamp(9px, 1vw, 13px); font-weight: 700; color: var(--green);
+    white-space: nowrap; }
+  .nav { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 14px; align-items: center; z-index: 10; }
+  .nav button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--card); color: var(--ink); font-size: 16px; cursor: pointer; }
+  .nav button:hover { background: var(--warm); }
+  .nav .ct { font-size: 13px; color: var(--faint); min-width: 44px; text-align: center; }
+  .bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--green);
+    transition: width .3s; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="deck">
+
+  <!-- S1 問題 -->
+  <section class="slide active">
+    <div>
+      <p class="eyebrow">Problem · 為什麼做 JobPilot</p>
+      <h1 class="headline">求職者不缺努力，<br>缺的是把努力<span class="g">收在同一個地方</span>。</h1>
+    </div>
+    <div class="body">
+      <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="card"><span class="num">01</span><h3>素材四散</h3><p>履歷在雲端、自介在備忘錄、題目在 Notion——面試前夕拼不起來。</p></div>
+        <div class="card"><span class="num">02</span><h3>進度靠腦補</h3><p>同時投十幾間，記不住投到哪、誰回了、該追誰。</p></div>
+        <div class="card"><span class="num">03</span><h3>經驗不累積</h3><p>每場面試的經驗用過即丟，下一場又從零開始。</p></div>
+      </div>
+    </div>
+    <div class="foot"><span>目標用戶：同時投遞 5+ 間的實習求職學生（第一用戶：我自己）</span><span>1 / 6</span></div>
+  </section>
+
+  <!-- S2 解法定位 -->
+  <section class="slide">
+    <div>
+      <p class="eyebrow">Solution · 定位</p>
+      <h1 class="headline">不是整理工具，<br>是<span class="g">會累積的求職系統</span>。</h1>
+    </div>
+    <div class="body">
+      <div style="display:grid; grid-template-columns: 1fr 1fr 0.06fr 1fr 0.06fr 1fr; gap: 2%; width:100%; align-items:center;">
+        <div class="metric card" style="padding:6% 4%;">
+          <div class="v">週準備次數</div>
+          <div class="l">北極星指標——反映核心功能黏著，拒絕虛榮指標</div>
+        </div>
+        <div class="card" style="text-align:center; padding:6% 4%;"><span class="tag">整合</span><p style="margin-top:10px; font-size:clamp(12px,1.3vw,17px); color:var(--muted);">素材與進度<br>收進一站</p></div>
+        <div class="arrow">→</div>
+        <div class="card" style="text-align:center; padding:6% 4%;"><span class="tag">行動</span><p style="margin-top:10px; font-size:clamp(12px,1.3vw,17px); color:var(--muted);">推薦、投遞、<br>面試準備</p></div>
+        <div class="arrow">→</div>
+        <div class="card" style="text-align:center; padding:6% 4%;"><span class="tag">累積</span><p style="margin-top:10px; font-size:clamp(12px,1.3vw,17px); color:var(--muted);">復盤回流題庫<br>越用越強 ↻</p></div>
+      </div>
+    </div>
+    <div class="foot"><span class="quote">「每面一場，AI 就更懂怎麼幫你準備下一場。」</span><span>2 / 6</span></div>
+  </section>
+
+  <!-- S3 動線前半 -->
+  <section class="slide">
+    <div>
+      <p class="eyebrow">Product · 從找缺到投遞</p>
+      <h1 class="headline">投遞前後的所有動作，<span class="g">不用離開這個工具</span>。</h1>
+    </div>
+    <div class="body">
+      <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="card"><span class="tag">每天 8:00</span><h3>AI 語意推薦</h3><p>爬蟲日更 104 職缺，embedding 比對履歷與意圖，附相符度與推薦理由。</p></div>
+        <div class="card"><span class="tag">一鍵</span><h3>客製推薦信</h3><p>履歷 × JD 生成，三種語氣，投遞前後皆可調整。</p></div>
+        <div class="card"><span class="tag">看板</span><h3>投遞追蹤</h3><p>投遞中 → 面試中 → 結果；久沒回音自動變待辦提醒。</p></div>
+      </div>
+    </div>
+    <div class="foot"><span>職缺庫 629 筆・每日自動更新・推薦 Email 已發 51 封</span><span>3 / 6</span></div>
+  </section>
+
+  <!-- S4 作戰室 -->
+  <section class="slide">
+    <div>
+      <p class="eyebrow">Core Differentiator · 面試作戰室</p>
+      <h1 class="headline">一場面試一間作戰室，<br><span class="g">下一場站在上一場的肩膀上</span>。</h1>
+    </div>
+    <div class="body">
+      <div style="display:grid; grid-template-columns: 1.15fr 1fr; gap:4%; width:100%; align-items:center;">
+        <div class="mock">
+          <div class="sec"><div class="sec-t">核心題目 <span>跨面試共用</span></div>
+            <div class="row"><span>請做一個簡短的自我介紹。</span><span class="r-tag">已練 2 版</span></div></div>
+          <div class="sec"><div class="sec-t">行為題・技術題 <span>AI 按該公司 JD 生成</span></div>
+            <div class="row"><span>分享一次你解決使用者問題的經驗。</span><span class="r-tag" style="color:var(--faint)">練習</span></div></div>
+          <div class="sec"><div class="sec-t">歷史題 <span>該職類考古題・復盤自動累積</span></div>
+            <div class="row hl"><span>如何用數據說服工程團隊調整優先序？</span><span class="r-tag">上次被問過</span></div></div>
+        </div>
+        <div>
+          <div class="card"><h3 style="margin-top:0;">AI 教練逐題打磨</h3><p>初稿 → 版本管理 → 評估回饋；30 秒／1 分鐘兩種版本應對不同節奏。</p></div>
+          <div class="card" style="margin-top:4%; background:var(--green-bg); border-color:rgba(15,110,86,.2);"><h3 style="margin-top:0; color:var(--green);">閉環的關鍵：復盤</h3><p style="color:#3d4a44;">面試後錄音或手動復盤，被問過的題目自動回流題庫、標上職類。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="quote">「這一頁就是產品名字的由來——每一次面試都讓你更強。」</span><span>4 / 6</span></div>
+  </section>
+
+  <!-- S5 決策 -->
+  <section class="slide">
+    <div>
+      <p class="eyebrow">PM Decisions · 關鍵取捨</p>
+      <h1 class="headline">兩個月、一個人、如期上線——<br>靠的是<span class="g">敢於不做</span>。</h1>
+    </div>
+    <div class="body">
+      <table>
+        <tr><th style="width:26%">決策</th><th style="width:30%">選擇</th><th>取捨理由</th></tr>
+        <tr><td>北極星指標</td><td>週面試準備次數</td><td class="why">反映差異化功能黏著，拒絕註冊數等虛榮指標</td></tr>
+        <tr><td>復盤方式</td><td>錄音＋手動雙軌</td><td class="why">錄音品質高但上傳率有風險，手動保底</td></tr>
+        <tr><td>明確不做</td><td>自動投遞、面試即時提示</td><td class="why">法律與道德風險——寫進 Not Doing List 守住 scope</td></tr>
+        <tr><td>LLM 選型</td><td>Groq（Llama 3.3 70B）</td><td class="why">零成本＋低延遲，介面抽象化可隨時換供應商</td></tr>
+      </table>
+    </div>
+    <div class="foot"><span>完整決策記錄與 Pre-mortem 風險清單見產品文件</span><span>5 / 6</span></div>
+  </section>
+
+  <!-- S6 成果與下一步 -->
+  <section class="slide">
+    <div>
+      <p class="eyebrow">Traction & Next · 成果與下一步</p>
+      <h1 class="headline">已上線、日更中，<br>而且<span class="g">我自己就是日活用戶</span>。</h1>
+    </div>
+    <div class="body">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:4%; width:100%;">
+        <div class="card">
+          <span class="tag">現況</span>
+          <p style="margin-top:12px;">MVP 全功能上線（Vercel）・爬蟲穩定日更・Dogfooding 中持續發現並修正問題</p>
+          <p style="margin-top:10px;"><span class="tag warm">誠實的數據</span></p>
+          <p style="margin-top:8px;">近 7 天僅 3 筆新推薦——正在評估配對門檻是否過嚴，用數據決定下一步</p>
+        </div>
+        <div class="card">
+          <span class="tag">Roadmap</span>
+          <p style="margin-top:12px;">① 推薦門檻調校（分數分布分析）</p>
+          <p style="margin-top:8px;">② 歷史題庫跨用戶匿名聚合（冷啟動解法）</p>
+          <p style="margin-top:8px;">③ 多平台職缺支援</p>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><span class="quote">「用戶研究對象、開發者、日活用戶都是我——每個決策我都能告訴你為什麼。」</span><span>6 / 6</span></div>
+  </section>
+
+</div>
+<div class="nav">
+  <button id="prev">‹</button>
+  <span class="ct" id="ct">1 / 6</span>
+  <button id="next">›</button>
+</div>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  let i = 0;
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle("active", k === i));
+    document.getElementById("ct").textContent = (i + 1) + " / " + slides.length;
+    document.getElementById("bar").style.width = ((i + 1) / slides.length * 100) + "%";
+  }
+  document.getElementById("prev").onclick = () => go(i - 1);
+  document.getElementById("next").onclick = () => go(i + 1);
+  addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") go(i + 1);
+    if (e.key === "ArrowLeft" || e.key === "PageUp") go(i - 1);
+  });
+  go(0);
+</script>
+</body>
+</html>

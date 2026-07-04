@@ -60,3 +60,7 @@ test-results/
 # Brainstorm mockups
 .superpowers/
 *.pdf
+
+# Backup files
+*.bak
+*.bak-*

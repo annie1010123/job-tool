@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "**/.DS_Store": true,
+    ".next": true,
+    "node_modules": true,
+    ".husky/_": true,
+    ".superpowers": true,
+    ".vercel": true,
+    "next-env.d.ts": true,
+    "tsconfig.tsbuildinfo": true,
+    "worker/__pycache__": true
+  }
+}
